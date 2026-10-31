@@ -4,13 +4,11 @@
  */
 
 const PREFERRED_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.0-flash',
+  'gemini-2.5-flash',
   'gemini-2.0-flash',
   'gemini-2.0-flash-exp',
   'gemini-1.5-flash',
   'gemini-1.5-flash-latest',
-  'gemini-2.5-flash',
   'gemini-1.5-pro',
   'gemini-pro'
 ];
@@ -88,7 +86,8 @@ async function callGeminiApi({ apiKey, prompt, systemInstruction = '', responseS
         ],
         generationConfig: {
           temperature: 0.4,
-          topP: 0.95
+          topP: 0.95,
+          maxOutputTokens: 8192
         }
       };
 
@@ -108,11 +107,19 @@ async function callGeminiApi({ apiKey, prompt, systemInstruction = '', responseS
         body: JSON.stringify(body)
       });
 
-      // If responseMimeType is rejected with 400 Bad Request by an older model, retry without it
-      if (!res.ok && responseSchema && res.status === 400) {
+      // If rejected with 400 Bad Request by an older model (e.g. responseMimeType or systemInstruction), retry without unsupported flags
+      if (!res.ok && res.status === 400) {
         const errorPeek = await res.clone().text();
-        if (errorPeek.includes('responseMimeType') || errorPeek.includes('generationConfig')) {
+        let shouldRetry = false;
+        if (body.generationConfig?.responseMimeType && (errorPeek.includes('responseMimeType') || errorPeek.includes('generationConfig'))) {
           delete body.generationConfig.responseMimeType;
+          shouldRetry = true;
+        }
+        if (body.systemInstruction && (errorPeek.includes('system_instruction') || errorPeek.includes('systemInstruction'))) {
+          delete body.systemInstruction;
+          shouldRetry = true;
+        }
+        if (shouldRetry) {
           res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -183,6 +190,46 @@ async function validateGeminiApiKey(apiKey) {
 }
 
 /**
+ * Lenient JSON parser that handles trailing commas and unescaped newlines/tabs inside string literals
+ */
+function tryParseLenient(str) {
+  if (!str) return null;
+  try {
+    return JSON.parse(str);
+  } catch {}
+
+  // Strip trailing commas before closing braces/brackets
+  const sanitized = str.replace(/,\s*([\]}])/g, '$1');
+  try {
+    return JSON.parse(sanitized);
+  } catch {}
+
+  // Repair unescaped newlines and tabs inside string literals
+  try {
+    let inString = false;
+    let escaped = false;
+    let fixed = '';
+    for (let i = 0; i < sanitized.length; i++) {
+      const char = sanitized[i];
+      if (char === '"' && !escaped) {
+        inString = !inString;
+      }
+      if (inString && (char === '\n' || char === '\r')) {
+        fixed += char === '\n' ? '\\n' : '';
+      } else if (inString && char === '\t') {
+        fixed += '\\t';
+      } else {
+        fixed += char;
+      }
+      escaped = char === '\\' && !escaped;
+    }
+    return JSON.parse(fixed);
+  } catch {}
+
+  return null;
+}
+
+/**
  * Robust JSON extraction from LLM responses that may contain conversational text,
  * markdown bullet points, code fences, or trailing commas.
  */
@@ -193,30 +240,28 @@ function extractAndParseJson(text, preferredArrayKey = null) {
 
   const trimmed = text.trim();
 
-  // Attempt 1: Direct JSON.parse
-  try {
-    const direct = JSON.parse(trimmed);
-    if (Array.isArray(direct)) return direct;
-    if (preferredArrayKey && Array.isArray(direct[preferredArrayKey])) return direct[preferredArrayKey];
-    if (Array.isArray(direct.commits)) return direct.commits;
-    if (Array.isArray(direct.plan)) return direct.plan;
-    if (Array.isArray(direct.data)) return direct.data;
-    if (typeof direct === 'object') return direct;
-  } catch {}
+  function evaluateCandidate(parsed) {
+    if (!parsed) return null;
+    if (Array.isArray(parsed)) return parsed;
+    if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
+    if (Array.isArray(parsed.commits)) return parsed.commits;
+    if (Array.isArray(parsed.plan)) return parsed.plan;
+    if (Array.isArray(parsed.data)) return parsed.data;
+    if (typeof parsed === 'object') return parsed;
+    return null;
+  }
+
+  // Attempt 1: Direct lenient parse
+  const direct = evaluateCandidate(tryParseLenient(trimmed));
+  if (direct) return direct;
 
   // Attempt 2: Extract from ```json ... ``` or ``` ... ``` code blocks
   const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/gi;
   let match;
   while ((match = codeBlockRegex.exec(trimmed)) !== null) {
     const candidate = match[1].trim();
-    try {
-      const parsed = JSON.parse(candidate);
-      if (Array.isArray(parsed)) return parsed;
-      if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
-      if (Array.isArray(parsed.commits)) return parsed.commits;
-      if (Array.isArray(parsed.plan)) return parsed.plan;
-      if (typeof parsed === 'object') return parsed;
-    } catch {}
+    const parsed = evaluateCandidate(tryParseLenient(candidate));
+    if (parsed) return parsed;
   }
 
   // Attempt 3: Find outermost bracket pair '[' ... ']'
@@ -224,17 +269,8 @@ function extractAndParseJson(text, preferredArrayKey = null) {
   const lastBracket = trimmed.lastIndexOf(']');
   if (firstBracket !== -1 && lastBracket > firstBracket) {
     const candidate = trimmed.substring(firstBracket, lastBracket + 1);
-    try {
-      const parsed = JSON.parse(candidate);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {
-      // Try stripping trailing commas e.g. , } or , ]
-      try {
-        const sanitized = candidate.replace(/,\s*([\]}])/g, '$1');
-        const parsed = JSON.parse(sanitized);
-        if (Array.isArray(parsed)) return parsed;
-      } catch {}
-    }
+    const parsed = evaluateCandidate(tryParseLenient(candidate));
+    if (parsed) return parsed;
   }
 
   // Attempt 4: Find outermost curly braces '{' ... '}' in case wrapped in object
@@ -242,23 +278,8 @@ function extractAndParseJson(text, preferredArrayKey = null) {
   const lastBrace = trimmed.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
     const candidate = trimmed.substring(firstBrace, lastBrace + 1);
-    try {
-      const parsed = JSON.parse(candidate);
-      if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
-      if (Array.isArray(parsed.commits)) return parsed.commits;
-      if (Array.isArray(parsed.plan)) return parsed.plan;
-      if (Array.isArray(parsed.data)) return parsed.data;
-      return parsed;
-    } catch {
-      try {
-        const sanitized = candidate.replace(/,\s*([\]}])/g, '$1');
-        const parsed = JSON.parse(sanitized);
-        if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
-        if (Array.isArray(parsed.commits)) return parsed.commits;
-        if (Array.isArray(parsed.plan)) return parsed.plan;
-        return parsed;
-      } catch {}
-    }
+    const parsed = evaluateCandidate(tryParseLenient(candidate));
+    if (parsed) return parsed;
   }
 
   throw new Error(`Could not parse JSON from AI response: ${trimmed.substring(0, 100)}...`);

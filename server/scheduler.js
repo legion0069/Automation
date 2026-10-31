@@ -5,10 +5,17 @@ const streakRunner = require('./streakRunner');
 let isMasterRunning = false;
 
 /**
- * Checks if a campaign has already run today in its configured timezone
+ * Checks if a campaign has already succeeded today in its configured timezone.
+ * Requires lastRunStatus to be 'success' so failed attempts can be retried.
  */
-function hasRunToday(lastRunAt, timezone = 'Asia/Kolkata') {
+function hasRunSuccessfullyToday(campaign, timezone = 'Asia/Kolkata') {
+  if (!campaign) return false;
+  const lastRunAt = typeof campaign === 'object' ? campaign.lastRunAt : campaign;
+  const lastRunStatus = typeof campaign === 'object' ? campaign.lastRunStatus : 'success';
+
   if (!lastRunAt) return false;
+  if (lastRunStatus && lastRunStatus !== 'success') return false;
+
   try {
     const nowStr = new Intl.DateTimeFormat('en-CA', {
       timeZone: timezone,
@@ -31,6 +38,13 @@ function hasRunToday(lastRunAt, timezone = 'Asia/Kolkata') {
 }
 
 /**
+ * Backwards-compatible alias for hasRunSuccessfullyToday
+ */
+function hasRunToday(campaignOrLastRunAt, timezone = 'Asia/Kolkata') {
+  return hasRunSuccessfullyToday(campaignOrLastRunAt, timezone);
+}
+
+/**
  * Gets the current HH:MM in a specific timezone
  */
 function getCurrentTimeInTimezone(timezone = 'Asia/Kolkata') {
@@ -48,7 +62,28 @@ function getCurrentTimeInTimezone(timezone = 'Asia/Kolkata') {
 }
 
 /**
- * Evaluates all active campaigns and runs any that are due right now
+ * Checks whether a campaign is due right now:
+ * 1. Campaign is active
+ * 2. Has NOT already succeeded today in its timezone
+ * 3. Has reached or passed the scheduled time (>= scheduledTime, e.g. 18:00)
+ */
+function isCampaignDue(campaign) {
+  if (!campaign || campaign.status !== 'active') return false;
+
+  const tz = campaign.timezone || 'Asia/Kolkata';
+  if (hasRunSuccessfullyToday(campaign, tz)) {
+    return false; // Already finished today's streak
+  }
+
+  const scheduledTime = campaign.cronTime || '18:00';
+  const currentTime = getCurrentTimeInTimezone(tz);
+
+  // e.g. "18:00" >= "18:00", or "23:10" >= "18:00" (catch-up if server was asleep at 18:00)
+  return currentTime >= scheduledTime;
+}
+
+/**
+ * Evaluates all active campaigns and runs any that are due right now (including catch-up)
  */
 async function processDueCampaigns() {
   if (isMasterRunning) return;
@@ -63,15 +98,13 @@ async function processDueCampaigns() {
       const scheduledTime = campaign.cronTime || '18:00';
       const currentTime = getCurrentTimeInTimezone(tz);
 
-      // Check if scheduled minute matches current minute
-      if (currentTime === scheduledTime) {
-        if (!hasRunToday(campaign.lastRunAt, tz)) {
-          console.log(`[Scheduler] Triggering campaign "${campaign.projectName}" at ${currentTime} ${tz}`);
-          try {
-            await streakRunner.runCampaignDay(campaign.id, false);
-          } catch (err) {
-            console.error(`[Scheduler] Error running campaign ${campaign.id}:`, err.message);
-          }
+      if (isCampaignDue(campaign)) {
+        console.log(`[Scheduler] 🚀 Executing due campaign "${campaign.projectName}" (Time: ${currentTime} ${tz}, Scheduled: ${scheduledTime})`);
+        try {
+          await streakRunner.runCampaignDay(campaign.id, false);
+          console.log(`[Scheduler] ✅ Successfully completed daily run for "${campaign.projectName}".`);
+        } catch (err) {
+          console.error(`[Scheduler] ❌ Error running campaign "${campaign.projectName}":`, err.message);
         }
       }
     }
@@ -84,8 +117,9 @@ async function processDueCampaigns() {
 
 /**
  * Starts the background cron scheduler.
- * Runs every minute to accurately match configured timezones.
- * Also sets up a dedicated hook for 6:00 PM IST (18:00) daily.
+ * - Dedicated 6:00 PM IST daily trigger
+ * - Minutely heartbeat for catch-up execution & custom times
+ * - Immediate startup catch-up execution
  */
 function startScheduler() {
   console.log('[Scheduler] Initializing GitStreak Cron Scheduler...');
@@ -95,7 +129,7 @@ function startScheduler() {
   cron.schedule(
     '0 18 * * *',
     async () => {
-      console.log('[Scheduler] ⏰ 6:00 PM IST Reached! Checking active campaigns...');
+      console.log('[Scheduler] ⏰ 6:00 PM IST Reached! Running active daily campaigns...');
       await processDueCampaigns();
     },
     {
@@ -103,12 +137,18 @@ function startScheduler() {
     }
   );
 
-  // Minutely heartbeat checker (catches campaigns with custom times or recovery)
+  // Minutely heartbeat checker (runs catch-up if server was asleep at 18:00 on Render free tier)
   cron.schedule('* * * * *', async () => {
     await processDueCampaigns();
   });
 
-  console.log('[Scheduler] Background cron jobs scheduled successfully.');
+  // Immediate catch-up check on server boot/wake-up
+  setTimeout(async () => {
+    console.log('[Scheduler] Checking for any pending/due campaigns on server boot...');
+    await processDueCampaigns();
+  }, 3000);
+
+  console.log('[Scheduler] Background cron jobs & catch-up recovery scheduled successfully.');
 }
 
 /**
@@ -125,14 +165,14 @@ async function triggerCronJobWebhook({ force = false, campaignId = null }) {
 
   for (const campaign of targets) {
     const tz = campaign.timezone || 'Asia/Kolkata';
-    const alreadyRun = hasRunToday(campaign.lastRunAt, tz);
+    const alreadyRun = hasRunSuccessfullyToday(campaign, tz);
 
     if (alreadyRun && !force) {
       results.push({
         campaignId: campaign.id,
         projectName: campaign.projectName,
         status: 'skipped',
-        reason: 'Already executed today in timezone ' + tz
+        reason: 'Already successfully completed today in timezone ' + tz
       });
       continue;
     }
@@ -164,6 +204,8 @@ module.exports = {
   startScheduler,
   processDueCampaigns,
   hasRunToday,
+  hasRunSuccessfullyToday,
+  isCampaignDue,
   getCurrentTimeInTimezone,
   triggerCronJobWebhook
 };

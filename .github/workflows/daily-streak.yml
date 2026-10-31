@@ -1,0 +1,51 @@
+name: GitStreak Daily Automation (6:00 PM IST)
+
+on:
+  schedule:
+    # 12:30 UTC = 18:00 IST (6:00 PM IST) every single day
+    - cron: '30 12 * * *'
+  workflow_dispatch:
+    inputs:
+      milestone:
+        description: 'Custom Milestone / Task for today (optional)'
+        required: false
+        default: ''
+      commits_count:
+        description: 'Number of commits to push today (1-5)'
+        required: false
+        default: '2'
+      force:
+        description: 'Force execution even if already completed today'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  run-streak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run GitStreak Daily Generator
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REPO: ${{ secrets.TARGET_REPO }}
+          TARGET_TOKEN: ${{ secrets.TARGET_TOKEN || secrets.PAT_TOKEN }}
+          COMMITS_PER_DAY: ${{ github.event.inputs.commits_count || '2' }}
+          INPUT_MILESTONE: ${{ github.event.inputs.milestone }}
+          INPUT_FORCE: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          node scripts/streak-runner.js

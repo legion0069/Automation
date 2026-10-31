@@ -53,9 +53,13 @@ async function pushCommitWithFiles({ token, owner, repo, branch = 'main', messag
   }
 
   const octokit = getOctokit(token);
+  const authorEmail = (author?.email && !author.email.includes('.local'))
+    ? author.email
+    : `${owner}@users.noreply.github.com`;
+
   const authorInfo = {
-    name: author?.name || 'GitStreak Bot',
-    email: author?.email || 'streak@bot.local',
+    name: author?.name || owner || 'GitStreak Bot',
+    email: authorEmail,
     date: new Date().toISOString()
   };
 
@@ -134,6 +138,9 @@ async function pushCommitWithFiles({ token, owner, repo, branch = 'main', messag
   // Create blobs for all files
   const treeItems = [];
   for (const file of files) {
+    const cleanPath = (file.path || '').replace(/^\.?\/+/, '').trim();
+    if (!cleanPath) continue;
+
     const { data: blob } = await octokit.rest.git.createBlob({
       owner,
       repo,
@@ -142,7 +149,7 @@ async function pushCommitWithFiles({ token, owner, repo, branch = 'main', messag
     });
 
     treeItems.push({
-      path: file.path,
+      path: cleanPath,
       mode: '100644', // standard file
       type: 'blob',
       sha: blob.sha
@@ -174,7 +181,7 @@ async function pushCommitWithFiles({ token, owner, repo, branch = 'main', messag
     repo,
     ref: `heads/${branch}`,
     sha: newCommit.sha,
-    force: false
+    force: true
   });
 
   return {

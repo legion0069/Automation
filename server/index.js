@@ -16,6 +16,56 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
+// ----------------- CRON-JOB.ORG / EXTERNAL SCHEDULER WEBHOOK -----------------
+async function handleCronTrigger(req, res) {
+  try {
+    const secret = req.query.secret || req.headers['x-cron-secret'] || req.body?.secret;
+    const expectedSecret = process.env.CRON_SECRET;
+
+    if (expectedSecret && secret !== expectedSecret) {
+      return res.status(401).send('Unauthorized: Invalid cron secret');
+    }
+
+    const force = req.query.force === 'true' || req.body?.force === true;
+    const campaignId = req.query.campaignId || req.body?.campaignId || null;
+
+    console.log(`[Webhook] Cron trigger received (force=${force}, campaignId=${campaignId || 'all'})`);
+    const results = await scheduler.triggerCronJobWebhook({ force, campaignId });
+
+    // cron-job.org free tier has a strict 4KB response limit.
+    // Return a lightweight status string if called by cron-job.org to prevent "output too large" errors.
+    const isCronJobOrg = (req.headers['user-agent'] || '').toLowerCase().includes('cron-job.org');
+    if (isCronJobOrg || req.query.format === 'text') {
+      return res.status(200).send(`OK: Processed ${results.length} campaign(s)`);
+    }
+
+    res.json({
+      success: true,
+      message: 'cron-job.org trigger executed successfully',
+      timestamp: new Date().toISOString(),
+      results
+    });
+  } catch (err) {
+    console.error('[Webhook] Cron trigger error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+// Lightweight health & ping endpoints (useful for free tier keep-alive)
+app.get(['/health', '/ping'], (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Guard: If cron-job.org hits the root URL "/" or "/index.html" directly by mistake,
+// execute the cron trigger handler instead of returning the 35KB index.html (which exceeds cron-job.org's 4KB limit)
+app.use((req, res, next) => {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  if (ua.includes('cron-job.org') && (req.path === '/' || req.path === '/index.html')) {
+    return handleCronTrigger(req, res);
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Optional authentication middleware across all routes
@@ -49,34 +99,6 @@ app.get('/api/system/time', (req, res) => {
     database: db.isMongoConnected() ? 'MongoDB Atlas' : 'Local Persistent Storage'
   });
 });
-
-// ----------------- CRON-JOB.ORG / EXTERNAL SCHEDULER WEBHOOK -----------------
-const handleCronTrigger = async (req, res) => {
-  try {
-    const secret = req.query.secret || req.headers['x-cron-secret'] || req.body?.secret;
-    const expectedSecret = process.env.CRON_SECRET;
-
-    if (expectedSecret && secret !== expectedSecret) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid cron secret' });
-    }
-
-    const force = req.query.force === 'true' || req.body?.force === true;
-    const campaignId = req.query.campaignId || req.body?.campaignId || null;
-
-    console.log(`[Webhook] Cron trigger received (force=${force}, campaignId=${campaignId || 'all'})`);
-    const results = await scheduler.triggerCronJobWebhook({ force, campaignId });
-
-    res.json({
-      success: true,
-      message: 'cron-job.org trigger executed successfully',
-      timestamp: new Date().toISOString(),
-      results
-    });
-  } catch (err) {
-    console.error('[Webhook] Cron trigger error:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
 
 app.get('/api/cron/trigger', handleCronTrigger);
 app.post('/api/cron/trigger', handleCronTrigger);
@@ -286,7 +308,8 @@ app.get('/api/campaigns', async (req, res) => {
       ...c,
       githubToken: c.githubToken ? `ghp_****${c.githubToken.slice(-4)}` : '',
       geminiApiKey: c.geminiApiKey ? `AIza****${c.geminiApiKey.slice(-4)}` : '',
-      hasRunToday: scheduler.hasRunToday(c.lastRunAt, c.timezone || 'Asia/Kolkata')
+      hasRunToday: scheduler.hasRunSuccessfullyToday(c, c.timezone || 'Asia/Kolkata'),
+      isDueNow: scheduler.isCampaignDue(c)
     }));
     res.json(sanitized);
   } catch (err) {
@@ -306,7 +329,8 @@ app.get('/api/campaigns/:id', async (req, res) => {
       ...campaign,
       githubToken: campaign.githubToken ? `ghp_****${campaign.githubToken.slice(-4)}` : '',
       geminiApiKey: campaign.geminiApiKey ? `AIza****${campaign.geminiApiKey.slice(-4)}` : '',
-      hasRunToday: scheduler.hasRunToday(campaign.lastRunAt, campaign.timezone || 'Asia/Kolkata'),
+      hasRunToday: scheduler.hasRunSuccessfullyToday(campaign, campaign.timezone || 'Asia/Kolkata'),
+      isDueNow: scheduler.isCampaignDue(campaign),
       recentLogs: logs
     });
   } catch (err) {
@@ -469,6 +493,10 @@ app.get('/api/campaigns/:id/logs', async (req, res) => {
 
 // SPA fallback
 app.use((req, res) => {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  if (ua.includes('cron-job.org')) {
+    return res.status(404).send('Not Found');
+  }
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 

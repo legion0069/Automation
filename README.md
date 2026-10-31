@@ -80,7 +80,29 @@ Used to generate the code files and commit roadmap:
 
 ---
 
-## 🌐 Deploying to the Cloud (So it runs 24/7)
+## ⚡ Standalone GitHub Actions Setup (Recommended — 100% Free & Serverless)
+
+You can run GitStreak directly inside GitHub Actions with **zero servers, zero hosting costs, and no sleep issues**:
+
+1. **Enable Workflow Write Permissions**:
+   - In your GitHub repo, go to **Settings** → **Actions** → **General**.
+   - Under **Workflow permissions**, choose **"Read and write permissions"** and check **"Allow GitHub Actions to create and approve pull requests"**.
+   - Click **Save**.
+
+2. **Add Gemini API Key Secret** *(Optional but recommended)*:
+   - In your GitHub repo, go to **Settings** → **Secrets and variables** → **Actions**.
+   - Click **New repository secret**.
+   - Name: `GEMINI_API_KEY`
+   - Value: Your key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+   *(Note: Even without a key, GitStreak's built-in autonomous resilient code generator will craft realistic milestone code and tests to preserve your streak!)*
+
+3. **Run or Schedule**:
+   - The workflow runs automatically every day at **6:00 PM IST (18:00 IST / 12:30 UTC)**.
+   - You can also trigger it manually anytime by going to the **Actions** tab on GitHub → select **GitStreak Daily Automation** → click **Run workflow**!
+
+---
+
+## 🌐 Deploying to the Cloud (Web Dashboard Version)
 
 When deployed to a cloud server, the cron job runs continuously even when your laptop is closed.
 
@@ -122,3 +144,5 @@ docker run -d -p 3000:3000 -v $(pwd)/data:/app/data --name gitstreak gitstreak-a
 ├── Dockerfile            # Container deployment configuration
 └── render.yaml           # One-click Render deployment template
 ```
+
+- [x] **Day 1**: Project setup, directory scaffolding, and environment config
