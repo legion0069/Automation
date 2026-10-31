@@ -130,7 +130,7 @@ function parseLenientJson(str) {
 }
 
 // ----------------- AUTONOMOUS RESILIENT CODE GENERATOR -----------------
-function generateResilientDayCode({ projectName, dayNumber, totalDays, milestone, commitsCount }) {
+function generateResilientDayCode({ projectName, dayNumber, totalDays, milestone, commitsCount, hasExistingScaffold = false }) {
   const safeName = (projectName || 'app').toLowerCase().replace(/[^a-z0-9-]/g, '-');
   const slug = (milestone || `day_${dayNumber}_feature`)
     .toLowerCase()
@@ -142,7 +142,7 @@ function generateResilientDayCode({ projectName, dayNumber, totalDays, milestone
   const commits = [];
 
   // Commit 1: Core Implementation
-  if (dayNumber === 1) {
+  if (dayNumber === 1 && !hasExistingScaffold) {
     commits.push({
       message: `feat(init): scaffold ${safeName} and configure baseline environment`,
       files: [
@@ -429,7 +429,8 @@ Requirements:
       dayNumber: currentDay,
       totalDays: totalDays,
       milestone: dayMilestone,
-      commitsCount: COMMITS_PER_DAY
+      commitsCount: COMMITS_PER_DAY,
+      hasExistingScaffold: fs.existsSync(pkgFile)
     });
     console.log(`✨ Generated ${generatedCommits.length} resilient code commit(s).`);
   }

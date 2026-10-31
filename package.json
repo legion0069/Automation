@@ -1,15 +1,29 @@
 {
   "name": "github-streaks",
-  "version": "0.1.0",
-  "description": "github-streaks - Built with autonomous daily milestones",
-  "main": "src/index.js",
+  "version": "1.0.0",
+  "description": "GitStreak AI - Automated GitHub Streaks & Autonomous Project Builder",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test tests/"
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "streak": "node scripts/streak-runner.js"
   },
   "keywords": [
     "gitstreak",
-    "automated",
-    "github-streaks"
-  ]
+    "github-streaks",
+    "automation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4",
+    "node-cron": "^4.6.0",
+    "uuid": "^14.0.3"
+  }
 }
