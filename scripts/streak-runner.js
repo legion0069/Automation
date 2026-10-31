@@ -184,6 +184,26 @@ function generateResilientDayCode({ projectName, dayNumber, totalDays, milestone
             `};`,
             ``
           ].join('\n')
+        },
+        {
+          path: `src/features/${slug}.js`,
+          content: [
+            `/**`,
+            ` * ${projectName} - Feature Module: ${slug}`,
+            ` * Milestone: ${milestone}`,
+            ` */`,
+            `class ${className} {`,
+            `  constructor(config = {}) {`,
+            `    this.config = config;`,
+            `    this.status = 'ready';`,
+            `  }`,
+            `  async execute(payload = {}) {`,
+            `    return { success: true, day: ${dayNumber}, milestone: "${milestone}" };`,
+            `  }`,
+            `}`,
+            `module.exports = { ${className} };`,
+            ``
+          ].join('\n')
         }
       ]
     });
