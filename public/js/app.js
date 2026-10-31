@@ -371,7 +371,7 @@ btnTestGemini.addEventListener('click', async () => {
     }
 
     geminiVerifyStatus.className = 'verify-status success';
-    geminiVerifyStatus.textContent = '✓ Google Gemini API Key verified successfully!';
+    geminiVerifyStatus.innerHTML = `✓ Google Gemini API Key verified! Active model: <strong>${data.model || 'Gemini Flash'}</strong>`;
   } catch (err) {
     geminiVerifyStatus.className = 'verify-status error';
     geminiVerifyStatus.textContent = `Error: ${err.message}`;

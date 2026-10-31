@@ -1,14 +1,87 @@
 /**
  * Gemini AI Client for GitStreak
- * Interacts with Google Gemini models to generate technical plans and functional code commits.
+ * Interacts with Google Gemini models using ModelService.ListModels discovery
+ * to automatically detect supported models and generate technical plans & code commits.
  */
 
-const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro'
-];
+// Cache detected working models per API key: { apiKeyPrefix: modelName }
+const modelCache = new Map();
+
+/**
+ * Discovers available models for the given API key using ModelService.ListModels
+ */
+async function discoverModel(apiKey) {
+  if (!apiKey) {
+    throw new Error('Google Gemini API Key is missing. Please provide a valid key.');
+  }
+
+  const keyPrefix = apiKey.slice(-8);
+  if (modelCache.has(keyPrefix)) {
+    return modelCache.get(keyPrefix);
+  }
+
+  // Call ModelService.ListModels
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    if (res.status === 400 || res.status === 403 || errorText.includes('API_KEY_INVALID')) {
+      throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
+    }
+    throw new Error(`Google API error (${res.status}): ${errorText}`);
+  }
+
+  const data = await res.json();
+  const models = data.models || [];
+
+  // Filter models that support generateContent
+  const usableModels = models.filter(m => 
+    Array.isArray(m.supportedGenerationMethods) &&
+    m.supportedGenerationMethods.includes('generateContent')
+  );
+
+  if (usableModels.length === 0) {
+    throw new Error('No Gemini models with generateContent capability were found for this API key.');
+  }
+
+  // Preference hierarchy: fast & reliable flash models first
+  const preferences = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash-8b',
+    'gemini-2.5-pro',
+    'gemini-1.5-pro',
+    'gemini-pro'
+  ];
+
+  let selectedModel = null;
+  for (const pref of preferences) {
+    const found = usableModels.find(m => 
+      m.name === `models/${pref}` || 
+      m.name === pref ||
+      m.name.endsWith(`/${pref}`)
+    );
+    if (found) {
+      selectedModel = found.name;
+      break;
+    }
+  }
+
+  // Fallback to first available model if none of preferred matched
+  if (!selectedModel) {
+    selectedModel = usableModels[0].name;
+  }
+
+  // Strip leading 'models/' if present to normalize
+  const normalized = selectedModel.replace(/^models\//, '');
+  modelCache.set(keyPrefix, normalized);
+  console.log(`[Gemini] Discovered and selected active model: "${normalized}"`);
+  return normalized;
+}
 
 /**
  * Helper to call Gemini GenerateContent REST API
@@ -18,78 +91,75 @@ async function callGeminiApi({ apiKey, prompt, systemInstruction = '', responseS
     throw new Error('Google Gemini API Key is missing. Please provide a valid key.');
   }
 
-  let lastError = null;
+  const modelName = await discoverModel(apiKey);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-  for (const model of GEMINI_MODELS) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-      const body = {
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.4,
-          topP: 0.95
-        }
-      };
-
-      if (systemInstruction) {
-        body.systemInstruction = {
-          parts: [{ text: systemInstruction }]
-        };
+  const body = {
+    contents: [
+      {
+        parts: [{ text: prompt }]
       }
-
-      if (responseSchema) {
-        body.generationConfig.responseMimeType = 'application/json';
-      }
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        // If 404 model not found, try next model
-        if (res.status === 404 || res.status === 400 && errorText.includes('not supported')) {
-          lastError = new Error(`Model ${model} failed: ${errorText}`);
-          continue;
-        }
-        throw new Error(`Gemini API error (${res.status}): ${errorText}`);
-      }
-
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) {
-        throw new Error('Empty response from Gemini API');
-      }
-
-      return text;
-    } catch (err) {
-      lastError = err;
-      if (err.message.includes('API_KEY_INVALID') || err.message.includes('API key not valid')) {
-        throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
-      }
+    ],
+    generationConfig: {
+      temperature: 0.4,
+      topP: 0.95
     }
+  };
+
+  if (systemInstruction) {
+    body.systemInstruction = {
+      parts: [{ text: systemInstruction }]
+    };
   }
 
-  throw lastError || new Error('All Gemini models failed to generate response');
+  if (responseSchema) {
+    body.generationConfig.responseMimeType = 'application/json';
+  }
+
+  let res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  // If responseSchema / responseMimeType is rejected by an older model, retry without it
+  if (!res.ok && responseSchema) {
+    delete body.generationConfig.responseMimeType;
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  }
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    if (res.status === 400 && errorText.includes('API_KEY_INVALID')) {
+      throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
+    }
+    throw new Error(`Gemini API error (${res.status}): ${errorText}`);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    throw new Error('Empty response from Gemini API');
+  }
+
+  return text;
 }
 
 /**
- * Validates Gemini API key with a fast ping test
+ * Validates Gemini API key by discovering available models and performing a lightweight ping
  */
 async function validateGeminiApiKey(apiKey) {
   try {
-    const text = await callGeminiApi({
-      apiKey,
-      prompt: 'Respond with the word "VALID" only.'
-    });
-    return { success: true, message: 'Gemini API Key is valid and active.' };
+    const model = await discoverModel(apiKey);
+    return {
+      success: true,
+      model,
+      message: `Google Gemini API Key is valid and active (using ${model}).`
+    };
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -131,7 +201,6 @@ Requirements:
   });
 
   try {
-    // Strip possible markdown fences if returned
     const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
     const plan = JSON.parse(cleaned);
     if (!Array.isArray(plan)) {
