@@ -1,164 +1,178 @@
 /**
  * Gemini AI Client for GitStreak
- * Interacts with Google Gemini models using ModelService.ListModels discovery
- * to automatically detect supported models and generate technical plans & code commits.
+ * Interacts with Google Gemini models with automatic multi-model fallback & suggestion detection
  */
 
-// Cache detected working models per API key: { apiKeyPrefix: modelName }
-const modelCache = new Map();
+const PREFERRED_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.0-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-2.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro'
+];
 
 /**
  * Discovers available models for the given API key using ModelService.ListModels
  */
-async function discoverModel(apiKey) {
+async function getCandidateModels(apiKey) {
   if (!apiKey) {
     throw new Error('Google Gemini API Key is missing. Please provide a valid key.');
   }
 
-  const keyPrefix = apiKey.slice(-8);
-  if (modelCache.has(keyPrefix)) {
-    return modelCache.get(keyPrefix);
-  }
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    const res = await fetch(url);
 
-  // Call ModelService.ListModels
-  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-  const res = await fetch(url);
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    if (res.status === 400 || res.status === 403 || errorText.includes('API_KEY_INVALID')) {
-      throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
+    if (!res.ok) {
+      const errorText = await res.text();
+      if (res.status === 400 || res.status === 403 || errorText.includes('API_KEY_INVALID')) {
+        throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
+      }
+      return [...PREFERRED_MODELS];
     }
-    throw new Error(`Google API error (${res.status}): ${errorText}`);
-  }
 
-  const data = await res.json();
-  const models = data.models || [];
+    const data = await res.json();
+    const available = (data.models || [])
+      .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+      .map(m => m.name.replace(/^models\//, ''));
 
-  // Filter models that support generateContent
-  const usableModels = models.filter(m => 
-    Array.isArray(m.supportedGenerationMethods) &&
-    m.supportedGenerationMethods.includes('generateContent')
-  );
-
-  if (usableModels.length === 0) {
-    throw new Error('No Gemini models with generateContent capability were found for this API key.');
-  }
-
-  // Preference hierarchy: fast & reliable flash models first
-  const preferences = [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-exp',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-2.5-pro',
-    'gemini-1.5-pro',
-    'gemini-pro'
-  ];
-
-  let selectedModel = null;
-  for (const pref of preferences) {
-    const found = usableModels.find(m => 
-      m.name === `models/${pref}` || 
-      m.name === pref ||
-      m.name.endsWith(`/${pref}`)
-    );
-    if (found) {
-      selectedModel = found.name;
-      break;
+    const ordered = [];
+    // Prioritize preferred models in order
+    for (const pref of PREFERRED_MODELS) {
+      if (available.includes(pref)) {
+        ordered.push(pref);
+      }
     }
-  }
 
-  // Fallback to first available model if none of preferred matched
-  if (!selectedModel) {
-    selectedModel = usableModels[0].name;
-  }
+    // Append any other available models
+    for (const av of available) {
+      if (!ordered.includes(av)) {
+        ordered.push(av);
+      }
+    }
 
-  // Strip leading 'models/' if present to normalize
-  const normalized = selectedModel.replace(/^models\//, '');
-  modelCache.set(keyPrefix, normalized);
-  console.log(`[Gemini] Discovered and selected active model: "${normalized}"`);
-  return normalized;
+    return ordered.length > 0 ? ordered : [...PREFERRED_MODELS];
+  } catch (err) {
+    if (err.message.includes('API_KEY_INVALID') || err.message.includes('invalid')) {
+      throw err;
+    }
+    return [...PREFERRED_MODELS];
+  }
 }
 
 /**
- * Helper to call Gemini GenerateContent REST API
+ * Calls Gemini API with automatic fallback across candidate models
  */
 async function callGeminiApi({ apiKey, prompt, systemInstruction = '', responseSchema = null }) {
   if (!apiKey) {
     throw new Error('Google Gemini API Key is missing. Please provide a valid key.');
   }
 
-  const modelName = await discoverModel(apiKey);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+  const candidateModels = await getCandidateModels(apiKey);
+  let lastError = null;
 
-  const body = {
-    contents: [
-      {
-        parts: [{ text: prompt }]
+  for (let i = 0; i < candidateModels.length; i++) {
+    const modelName = candidateModels[i];
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+      const body = {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          topP: 0.95
+        }
+      };
+
+      if (systemInstruction) {
+        body.systemInstruction = {
+          parts: [{ text: systemInstruction }]
+        };
       }
-    ],
-    generationConfig: {
-      temperature: 0.4,
-      topP: 0.95
+
+      if (responseSchema) {
+        body.generationConfig.responseMimeType = 'application/json';
+      }
+
+      let res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      // If responseSchema / responseMimeType is rejected by an older model, retry without it
+      if (!res.ok && responseSchema) {
+        delete body.generationConfig.responseMimeType;
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        if (res.status === 400 && errorText.includes('API_KEY_INVALID')) {
+          throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
+        }
+
+        // If Google suggests a specific model (e.g. "update your code to use models/gemini-3.8-flash")
+        const suggested = errorText.match(/models\/([a-zA-Z0-9.-]+)/);
+        if (suggested && suggested[1] && !candidateModels.includes(suggested[1])) {
+          console.log(`[Gemini] Google suggested model "${suggested[1]}". Inserting as next candidate...`);
+          candidateModels.splice(i + 1, 0, suggested[1]);
+        }
+
+        // If 404, deprecated, or no longer available, continue to next model
+        if (res.status === 404 || errorText.includes('no longer available') || errorText.includes('not supported') || errorText.includes('NOT_FOUND')) {
+          console.warn(`[Gemini] Model "${modelName}" returned 404/unavailable. Trying next model...`);
+          lastError = new Error(`Model ${modelName} unavailable: ${errorText}`);
+          continue;
+        }
+
+        throw new Error(`Gemini API error (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        throw new Error('Empty response from Gemini API');
+      }
+
+      return text;
+    } catch (err) {
+      lastError = err;
+      if (err.message.includes('API_KEY_INVALID')) {
+        throw err;
+      }
     }
-  };
-
-  if (systemInstruction) {
-    body.systemInstruction = {
-      parts: [{ text: systemInstruction }]
-    };
   }
 
-  if (responseSchema) {
-    body.generationConfig.responseMimeType = 'application/json';
-  }
-
-  let res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-
-  // If responseSchema / responseMimeType is rejected by an older model, retry without it
-  if (!res.ok && responseSchema) {
-    delete body.generationConfig.responseMimeType;
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-  }
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    if (res.status === 400 && errorText.includes('API_KEY_INVALID')) {
-      throw new Error('The provided Google Gemini API Key is invalid. Please check your key at Google AI Studio.');
-    }
-    throw new Error(`Gemini API error (${res.status}): ${errorText}`);
-  }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Empty response from Gemini API');
-  }
-
-  return text;
+  throw lastError || new Error('All candidate Gemini models failed.');
 }
 
 /**
- * Validates Gemini API key by discovering available models and performing a lightweight ping
+ * Validates Gemini API key with a ping
  */
 async function validateGeminiApiKey(apiKey) {
   try {
-    const model = await discoverModel(apiKey);
+    const text = await callGeminiApi({
+      apiKey,
+      prompt: 'Respond with "VALID" only.'
+    });
+    const candidates = await getCandidateModels(apiKey);
     return {
       success: true,
-      model,
-      message: `Google Gemini API Key is valid and active (using ${model}).`
+      model: candidates[0] || 'gemini-3.8-flash',
+      message: `Google Gemini API Key is valid and active.`
     };
   } catch (err) {
     return { success: false, error: err.message };
@@ -273,7 +287,6 @@ Return ONLY a valid JSON array of commit objects:
       throw new Error('AI returned an empty commits array');
     }
 
-    // Validate structure
     for (const c of commits) {
       if (!c.commitMessage || !Array.isArray(c.files) || c.files.length === 0) {
         throw new Error('Invalid commit structure in AI output');
