@@ -104,7 +104,9 @@ function renderHeatmapSimulator() {
 // ----------------- API CALLS -----------------
 async function fetchCampaigns() {
   try {
-    const res = await fetch('/api/campaigns');
+    const savedToken = localStorage.getItem('gitstreak_jwt');
+    const headers = savedToken ? { 'Authorization': `Bearer ${savedToken}` } : {};
+    const res = await fetch('/api/campaigns', { headers });
     if (!res.ok) throw new Error('Failed to load campaigns');
     campaigns = await res.json();
     renderCampaigns();
@@ -124,17 +126,38 @@ function updateStats() {
 
 // ----------------- RENDER CAMPAIGN CARDS -----------------
 function renderCampaigns() {
+  if (!currentUser) {
+    campaignsGrid.innerHTML = `
+      <div class="empty-state auth-gate-card">
+        <div class="empty-icon" style="background: rgba(36, 41, 47, 0.8); color: #fff;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </div>
+        <h4>Sign In to View & Create Automations</h4>
+        <p>To prevent unauthorized actions and remember your streak campaigns across visits, please sign in with your GitHub account.</p>
+        <a href="/api/auth/github" class="btn btn-github btn-lg" style="margin-top: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          Sign in with GitHub
+        </a>
+      </div>
+    `;
+    return;
+  }
+
   if (campaigns.length === 0) {
     campaignsGrid.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </div>
-        <h4>No Active Automations Yet</h4>
-        <p>Set up your first project streak! Give it your repo URL, PAT, and Gemini key, and it will push daily commits at 6:00 PM IST.</p>
+        <h4>Welcome, @${escapeHtml(currentUser.username)}!</h4>
+        <p>You don't have any ongoing project automations yet. Start your first automated daily streak!</p>
         <button class="btn btn-primary" onclick="openNewCampaignModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Create First Streak
+          Create First Automation
         </button>
       </div>
     `;
@@ -472,9 +495,15 @@ newCampaignForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Activating...';
 
   try {
+    const savedToken = localStorage.getItem('gitstreak_jwt');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(savedToken ? { 'Authorization': `Bearer ${savedToken}` } : {})
+    };
+
     const res = await fetch('/api/campaigns', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         repoUrl,
         githubToken,
@@ -604,6 +633,21 @@ document.getElementById('btnCloseLogsModal2').addEventListener('click', closeLog
 
 // ----------------- MODAL OPEN / CLOSE HANDLERS -----------------
 function openNewCampaignModal() {
+  if (!currentUser) {
+    showToast('Please sign in with GitHub before creating an automation project!', 'error');
+    if (isOAuthConfigured) {
+      window.location.href = '/api/auth/github';
+    } else {
+      openOauthModal();
+    }
+    return;
+  }
+
+  // Pre-fill saved Gemini API key if available
+  if (currentUser.savedGeminiApiKey && !geminiApiKeyInput.value) {
+    geminiApiKeyInput.value = currentUser.savedGeminiApiKey;
+  }
+
   newCampaignModal.classList.add('active');
 }
 function closeNewCampaignModal() {
@@ -696,7 +740,17 @@ document.getElementById('btnCloseCronModal2').addEventListener('click', () => cr
 // ----------------- AUTHENTICATION & REPOSITORIES -----------------
 async function checkAuthAndDbStatus() {
   try {
-    const res = await fetch('/api/auth/status');
+    // Save token if received in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    if (tokenFromUrl) {
+      localStorage.setItem('gitstreak_jwt', tokenFromUrl);
+    }
+
+    const savedToken = localStorage.getItem('gitstreak_jwt');
+    const headers = savedToken ? { 'Authorization': `Bearer ${savedToken}` } : {};
+
+    const res = await fetch('/api/auth/status', { headers });
     const data = await res.json();
     isOAuthConfigured = data.isOAuthConfigured;
     currentUser = data.user;
@@ -717,6 +771,9 @@ async function checkAuthAndDbStatus() {
 
     if (currentUser) {
       loadUserRepositories();
+      if (currentUser.savedGeminiApiKey && !geminiApiKeyInput.value) {
+        geminiApiKeyInput.value = currentUser.savedGeminiApiKey;
+      }
     }
   } catch (err) {
     console.error('Error checking auth:', err);
@@ -737,6 +794,7 @@ function renderAuthNavbar() {
     `;
 
     document.getElementById('btnSignOut').addEventListener('click', async () => {
+      localStorage.removeItem('gitstreak_jwt');
       await fetch('/api/auth/logout', { method: 'POST' });
       showToast('Signed out of GitHub.', 'info');
       currentUser = null;

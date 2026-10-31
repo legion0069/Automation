@@ -124,7 +124,7 @@ function signUserToken(user) {
       username: user.username
     },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: '365d' }
   );
 }
 

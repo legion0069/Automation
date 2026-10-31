@@ -229,17 +229,25 @@ module.exports = {
   },
 
   // ----------------- CAMPAIGN METHODS -----------------
-  async getAllCampaigns(userId = null) {
+  async getAllCampaigns(userId = null, username = null) {
+    if (!userId && !username) {
+      return []; // Strict protection: unauthenticated users cannot view other people's campaigns
+    }
+
     if (isMongoActive && CampaignModel) {
-      const query = userId ? { userId } : {};
+      const conditions = [];
+      if (userId) conditions.push({ userId });
+      if (username) conditions.push({ repoOwner: new RegExp(`^${username}$`, 'i') });
+      const query = conditions.length > 1 ? { $or: conditions } : conditions[0];
       const list = await CampaignModel.find(query).sort({ createdAt: -1 }).lean();
       return list;
     }
 
-    if (userId) {
-      return localCache.campaigns.filter(c => c.userId === userId || !c.userId);
-    }
-    return [...localCache.campaigns];
+    return localCache.campaigns.filter(c => {
+      if (userId && c.userId === userId) return true;
+      if (username && c.repoOwner && c.repoOwner.toLowerCase() === username.toLowerCase()) return true;
+      return false;
+    });
   },
 
   async getAllCampaignsForScheduler() {

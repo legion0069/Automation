@@ -95,7 +95,8 @@ app.get('/api/auth/status', (req, res) => {
       displayName: req.user.displayName,
       avatarUrl: req.user.avatarUrl,
       email: req.user.email,
-      hasToken: Boolean(req.user.accessToken)
+      hasToken: Boolean(req.user.accessToken),
+      savedGeminiApiKey: req.user.geminiApiKey || ''
     } : null
   });
 });
@@ -138,15 +139,15 @@ app.get('/api/auth/github/callback', async (req, res) => {
 
     const jwtToken = auth.signUserToken(user);
 
-    // Set 30-day cookie
+    // Set 365-day cookie so user is remembered permanently
     res.cookie('gitstreak_jwt', jwtToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000
+      maxAge: 365 * 24 * 60 * 60 * 1000
     });
 
-    res.redirect('/?auth=success');
+    res.redirect(`/?auth=success&token=${encodeURIComponent(jwtToken)}`);
   } catch (err) {
     console.error('[OAuth Callback Error]:', err.message);
     res.redirect(`/?auth=error&msg=${encodeURIComponent(err.message)}`);
@@ -276,8 +277,11 @@ app.post('/api/generate-plan', async (req, res) => {
 // List campaigns (user-scoped if logged in)
 app.get('/api/campaigns', async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : null;
-    const campaigns = await db.getAllCampaigns(userId);
+    if (!req.user) {
+      // Don't show automations to unauthenticated visitors
+      return res.json([]);
+    }
+    const campaigns = await db.getAllCampaigns(req.user.id, req.user.username);
     const sanitized = campaigns.map(c => ({
       ...c,
       githubToken: c.githubToken ? `ghp_****${c.githubToken.slice(-4)}` : '',
@@ -313,6 +317,13 @@ app.get('/api/campaigns/:id', async (req, res) => {
 // Create new campaign
 app.post('/api/campaigns', async (req, res) => {
   try {
+    // ENFORCE AUTHENTICATION: Disallow creating automation without signing in
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Authentication Required: You must sign in with GitHub before creating an automation project.'
+      });
+    }
+
     let {
       projectName,
       projectDescription,
@@ -330,8 +341,14 @@ app.post('/api/campaigns', async (req, res) => {
     } = req.body;
 
     // Use user's OAuth access token if not manually provided
-    if (!githubToken && req.user?.accessToken) {
+    if (!githubToken && req.user.accessToken) {
       githubToken = req.user.accessToken;
+    }
+
+    // Save/update Gemini API key in user profile so they never have to re-enter it
+    const activeGeminiKey = geminiApiKey || req.user.geminiApiKey || process.env.GEMINI_API_KEY || '';
+    if (geminiApiKey && geminiApiKey !== req.user.geminiApiKey) {
+      await db.updateUserGeminiKey(req.user.id, geminiApiKey);
     }
 
     if (!repoUrl) return res.status(400).json({ error: 'Repository URL is required.' });
@@ -348,7 +365,7 @@ app.post('/api/campaigns', async (req, res) => {
     });
 
     const newCampaign = await db.createCampaign({
-      userId: req.user ? req.user.id : null,
+      userId: req.user.id,
       projectName: projectName || parsed.repo,
       projectDescription: projectDescription || '',
       repoUrl,
@@ -356,7 +373,7 @@ app.post('/api/campaigns', async (req, res) => {
       repoName: parsed.repo,
       branch: branch || verification.repository.defaultBranch || 'main',
       githubToken,
-      geminiApiKey: geminiApiKey || req.user?.geminiApiKey || process.env.GEMINI_API_KEY || '',
+      geminiApiKey: activeGeminiKey,
       totalDays: Number(totalDays) || 30,
       currentDay: 1,
       commitsPerDay: Number(commitsPerDay) || 2,
