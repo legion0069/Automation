@@ -108,14 +108,17 @@ async function callGeminiApi({ apiKey, prompt, systemInstruction = '', responseS
         body: JSON.stringify(body)
       });
 
-      // If responseSchema / responseMimeType is rejected by an older model, retry without it
-      if (!res.ok && responseSchema) {
-        delete body.generationConfig.responseMimeType;
-        res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
+      // If responseMimeType is rejected with 400 Bad Request by an older model, retry without it
+      if (!res.ok && responseSchema && res.status === 400) {
+        const errorPeek = await res.clone().text();
+        if (errorPeek.includes('responseMimeType') || errorPeek.includes('generationConfig')) {
+          delete body.generationConfig.responseMimeType;
+          res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
       }
 
       if (!res.ok) {
@@ -180,6 +183,88 @@ async function validateGeminiApiKey(apiKey) {
 }
 
 /**
+ * Robust JSON extraction from LLM responses that may contain conversational text,
+ * markdown bullet points, code fences, or trailing commas.
+ */
+function extractAndParseJson(text, preferredArrayKey = null) {
+  if (!text || typeof text !== 'string') {
+    throw new Error('Empty response from AI');
+  }
+
+  const trimmed = text.trim();
+
+  // Attempt 1: Direct JSON.parse
+  try {
+    const direct = JSON.parse(trimmed);
+    if (Array.isArray(direct)) return direct;
+    if (preferredArrayKey && Array.isArray(direct[preferredArrayKey])) return direct[preferredArrayKey];
+    if (Array.isArray(direct.commits)) return direct.commits;
+    if (Array.isArray(direct.plan)) return direct.plan;
+    if (Array.isArray(direct.data)) return direct.data;
+    if (typeof direct === 'object') return direct;
+  } catch {}
+
+  // Attempt 2: Extract from ```json ... ``` or ``` ... ``` code blocks
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/gi;
+  let match;
+  while ((match = codeBlockRegex.exec(trimmed)) !== null) {
+    const candidate = match[1].trim();
+    try {
+      const parsed = JSON.parse(candidate);
+      if (Array.isArray(parsed)) return parsed;
+      if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
+      if (Array.isArray(parsed.commits)) return parsed.commits;
+      if (Array.isArray(parsed.plan)) return parsed.plan;
+      if (typeof parsed === 'object') return parsed;
+    } catch {}
+  }
+
+  // Attempt 3: Find outermost bracket pair '[' ... ']'
+  const firstBracket = trimmed.indexOf('[');
+  const lastBracket = trimmed.lastIndexOf(']');
+  if (firstBracket !== -1 && lastBracket > firstBracket) {
+    const candidate = trimmed.substring(firstBracket, lastBracket + 1);
+    try {
+      const parsed = JSON.parse(candidate);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // Try stripping trailing commas e.g. , } or , ]
+      try {
+        const sanitized = candidate.replace(/,\s*([\]}])/g, '$1');
+        const parsed = JSON.parse(sanitized);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+  }
+
+  // Attempt 4: Find outermost curly braces '{' ... '}' in case wrapped in object
+  const firstBrace = trimmed.indexOf('{');
+  const lastBrace = trimmed.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = trimmed.substring(firstBrace, lastBrace + 1);
+    try {
+      const parsed = JSON.parse(candidate);
+      if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
+      if (Array.isArray(parsed.commits)) return parsed.commits;
+      if (Array.isArray(parsed.plan)) return parsed.plan;
+      if (Array.isArray(parsed.data)) return parsed.data;
+      return parsed;
+    } catch {
+      try {
+        const sanitized = candidate.replace(/,\s*([\]}])/g, '$1');
+        const parsed = JSON.parse(sanitized);
+        if (preferredArrayKey && Array.isArray(parsed[preferredArrayKey])) return parsed[preferredArrayKey];
+        if (Array.isArray(parsed.commits)) return parsed.commits;
+        if (Array.isArray(parsed.plan)) return parsed.plan;
+        return parsed;
+      } catch {}
+    }
+  }
+
+  throw new Error(`Could not parse JSON from AI response: ${trimmed.substring(0, 100)}...`);
+}
+
+/**
  * Auto-generates a structured day-by-day technical project plan
  */
 async function generateProjectPlan({ apiKey, projectName, description, totalDays = 14 }) {
@@ -210,20 +295,19 @@ Requirements:
   const text = await callGeminiApi({
     apiKey,
     prompt,
-    systemInstruction: 'You are an expert code architect. Always output strictly valid JSON with no markdown wrapping.',
+    systemInstruction: 'You are an expert code architect. Always output strictly valid JSON starting with [ and ending with ] with no markdown bullets or preamble.',
     responseSchema: true
   });
 
   try {
-    const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-    const plan = JSON.parse(cleaned);
+    const plan = extractAndParseJson(text, 'plan');
     if (!Array.isArray(plan)) {
       throw new Error('Plan is not an array');
     }
     return plan;
   } catch (parseErr) {
     console.error('Failed to parse plan JSON:', text);
-    throw new Error('Gemini did not return valid JSON for the project plan. Please try again.');
+    throw new Error(`Gemini did not return valid JSON for the project plan: ${parseErr.message}`);
   }
 }
 
@@ -240,7 +324,9 @@ async function generateDailyCode({
   commitsCount = 2,
   existingFiles = []
 }) {
-  const prompt = `You are a Senior Full-Stack Engineer working on the repository for project: "${projectName}".
+  const prompt = `CRITICAL INSTRUCTION: You must respond ONLY with a raw JSON array. DO NOT include any preamble, bullet points, introduction, explanation, markdown formatting, or markdown code blocks (e.g., no \`\`\`json). The first character of your response MUST be "[" and the last character MUST be "]".
+
+You are a Senior Full-Stack Engineer working on the repository for project: "${projectName}".
 Project Overview: "${description}"
 Progress: Day ${currentDay} of ${totalDays}.
 Today's Objective / Milestone: "${dayMilestone}"
@@ -262,11 +348,11 @@ Return ONLY a valid JSON array of commit objects:
     "files": [
       {
         "path": "package.json",
-        "content": "{\\n  \\"name\\": \\"...\\"...\\n}"
+        "content": "{\\n  \\"name\\": \\"my-app\\"\\n}"
       },
       {
         "path": "README.md",
-        "content": "# ${projectName}\\n\\n${description}..."
+        "content": "# ${projectName}\\n\\n${description}"
       }
     ]
   }
@@ -275,13 +361,12 @@ Return ONLY a valid JSON array of commit objects:
   const text = await callGeminiApi({
     apiKey,
     prompt,
-    systemInstruction: 'You are an elite software developer. You generate complete, runnable, production-quality source code. Output strictly valid JSON without markdown wrapping.',
+    systemInstruction: 'You are an elite software developer. You generate complete, runnable, production-quality source code. Output strictly a valid JSON array starting with [ and ending with ] without any markdown bullets, headers, or wrapping.',
     responseSchema: true
   });
 
   try {
-    const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-    const commits = JSON.parse(cleaned);
+    const commits = extractAndParseJson(text, 'commits');
 
     if (!Array.isArray(commits) || commits.length === 0) {
       throw new Error('AI returned an empty commits array');
