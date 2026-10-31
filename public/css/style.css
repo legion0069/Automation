@@ -304,6 +304,194 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-hero {
+  padding: 14px 32px;
+  font-size: 1.05rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 30px rgba(57, 211, 83, 0.25);
+  transition: all 0.25s ease;
+}
+
+.btn-hero:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 45px rgba(57, 211, 83, 0.45);
+}
+
+/* Minimal Homepage Section */
+.minimal-home-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 50px 20px 70px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: var(--git-green);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.minimal-home-section h2 {
+  font-size: 2.85rem;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+}
+
+.minimal-home-section h2 span {
+  background: linear-gradient(90deg, #39d353, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.minimal-home-section .home-subtitle {
+  font-size: 1.12rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+.home-feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 50px;
+  width: 100%;
+  text-align: left;
+}
+
+.feature-mini-card {
+  background: rgba(18, 24, 38, 0.65);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.feature-mini-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(57, 211, 83, 0.3);
+}
+
+.feature-mini-card .feat-icon {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.feature-mini-card h5 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-main);
+}
+
+.feature-mini-card p {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Minimal Homepage Preview Card */
+.home-preview-card {
+  margin-top: 44px;
+  width: 100%;
+  max-width: 760px;
+  background: rgba(15, 20, 32, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 185, 129, 0.08);
+  backdrop-filter: blur(16px);
+  text-align: left;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.preview-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.preview-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.preview-dots span:nth-child(1) { background: #ef4444; opacity: 0.8; }
+.preview-dots span:nth-child(2) { background: #f59e0b; opacity: 0.8; }
+.preview-dots span:nth-child(3) { background: #10b981; opacity: 0.8; }
+
+.preview-title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.preview-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 24px 20px;
+  gap: 16px;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, transparent 100%);
+  text-align: center;
+}
+
+.preview-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-stat .p-num {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-main);
+  background: linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.preview-stat .p-label {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Dashboard View Transition */
+.dashboard-view {
+  animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .auth-box {
   display: flex;
   align-items: center;
