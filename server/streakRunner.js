@@ -7,7 +7,7 @@ const gemini = require('./gemini');
  * Can be triggered automatically by cron or manually from the dashboard.
  */
 async function runCampaignDay(campaignId, isManual = false) {
-  const campaign = db.getCampaign(campaignId);
+  const campaign = await db.getCampaign(campaignId);
   if (!campaign) {
     throw new Error(`Campaign with ID ${campaignId} not found.`);
   }

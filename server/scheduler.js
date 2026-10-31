@@ -55,7 +55,7 @@ async function processDueCampaigns() {
   isMasterRunning = true;
 
   try {
-    const campaigns = db.getAllCampaigns();
+    const campaigns = await db.getAllCampaignsForScheduler();
     const activeCampaigns = campaigns.filter(c => c.status === 'active');
 
     for (const campaign of activeCampaigns) {
@@ -116,7 +116,7 @@ function startScheduler() {
  * Executes active campaigns.
  */
 async function triggerCronJobWebhook({ force = false, campaignId = null }) {
-  const campaigns = db.getAllCampaigns();
+  const campaigns = await db.getAllCampaignsForScheduler();
   const targets = campaignId
     ? campaigns.filter(c => c.id === campaignId)
     : campaigns.filter(c => c.status === 'active');

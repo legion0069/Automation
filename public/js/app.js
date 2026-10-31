@@ -6,6 +6,9 @@
 let campaigns = [];
 let activeViewingCampaignId = null;
 let logPollInterval = null;
+let currentUser = null;
+let isOAuthConfigured = false;
+let userRepos = [];
 
 // DOM Elements
 const istClockPill = document.getElementById('istClockPill');
@@ -439,6 +442,14 @@ newCampaignForm.addEventListener('submit', async (e) => {
 
   const repoUrl = repoUrlInput.value.trim();
   const githubToken = githubTokenInput.value.trim();
+
+  // If not logged in and no token provided, require token
+  if (!githubToken && !currentUser) {
+    showToast('Please enter your GitHub Personal Access Token or Sign in with GitHub!', 'error');
+    githubTokenInput.focus();
+    return;
+  }
+
   const branch = document.getElementById('branchName').value.trim() || 'main';
   const projectName = projectNameInput.value.trim();
   const projectDescription = projectDescInput.value.trim();
@@ -682,8 +693,159 @@ btnTestCronEndpoint.addEventListener('click', async () => {
 document.getElementById('btnCloseCronModal').addEventListener('click', () => cronJobModal.classList.remove('active'));
 document.getElementById('btnCloseCronModal2').addEventListener('click', () => cronJobModal.classList.remove('active'));
 
+// ----------------- AUTHENTICATION & REPOSITORIES -----------------
+async function checkAuthAndDbStatus() {
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json();
+    isOAuthConfigured = data.isOAuthConfigured;
+    currentUser = data.user;
+
+    renderAuthNavbar();
+
+    // Check system time & DB
+    const timeRes = await fetch('/api/system/time');
+    const timeData = await timeRes.json();
+    const dbStatusEl = document.getElementById('statDbStatus');
+    if (dbStatusEl) {
+      dbStatusEl.textContent = timeData.database?.includes('MongoDB') ? 'MongoDB Atlas' : 'Local DB';
+    }
+    const dbEngineText = document.getElementById('dbEngineText');
+    if (dbEngineText) {
+      dbEngineText.textContent = timeData.database || 'Local Persistent Storage';
+    }
+
+    if (currentUser) {
+      loadUserRepositories();
+    }
+  } catch (err) {
+    console.error('Error checking auth:', err);
+  }
+}
+
+function renderAuthNavbar() {
+  const container = document.getElementById('authContainer');
+  if (!container) return;
+
+  if (currentUser) {
+    container.innerHTML = `
+      <div class="user-badge" title="Logged in as @${escapeHtml(currentUser.username)}">
+        <img src="${currentUser.avatarUrl || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" class="user-avatar" alt="Avatar">
+        <span class="user-name">@${escapeHtml(currentUser.username)}</span>
+        <button class="btn btn-outline btn-sm" id="btnSignOut" style="padding: 2px 8px; font-size: 0.72rem; margin-left: 4px;">Sign Out</button>
+      </div>
+    `;
+
+    document.getElementById('btnSignOut').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      showToast('Signed out of GitHub.', 'info');
+      currentUser = null;
+      renderAuthNavbar();
+      fetchCampaigns();
+    });
+
+    const badge = document.getElementById('oauthActiveBadge');
+    if (badge) badge.style.display = 'block';
+    const patReq = document.getElementById('patRequiredAsterisk');
+    if (patReq) patReq.style.display = 'none';
+    const patHint = document.getElementById('patHint');
+    if (patHint) patHint.innerHTML = 'Optional: Using your authenticated GitHub OAuth session by default.';
+
+    if (committerNameInput && !committerNameInput.value) {
+      committerNameInput.value = currentUser.displayName || currentUser.username;
+    }
+    if (committerEmailInput && !committerEmailInput.value) {
+      committerEmailInput.value = currentUser.email || '';
+    }
+  } else {
+    container.innerHTML = `
+      <a href="/api/auth/github" class="btn btn-github" id="btnGithubLogin">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        Sign in with GitHub
+      </a>
+    `;
+
+    document.getElementById('btnGithubLogin').addEventListener('click', (e) => {
+      if (!isOAuthConfigured) {
+        e.preventDefault();
+        openOauthModal();
+      }
+    });
+
+    const badge = document.getElementById('oauthActiveBadge');
+    if (badge) badge.style.display = 'none';
+    const repoGroup = document.getElementById('repoSelectorGroup');
+    if (repoGroup) repoGroup.style.display = 'none';
+    const patReq = document.getElementById('patRequiredAsterisk');
+    if (patReq) patReq.style.display = 'inline';
+    const patHint = document.getElementById('patHint');
+    if (patHint) patHint.innerHTML = 'Needs <code>repo</code> scope permission. Don\'t have one? <a href="#" id="linkPatHelp">Click here for the 30-second guide</a>.';
+  }
+}
+
+async function loadUserRepositories() {
+  try {
+    const res = await fetch('/api/user/repos');
+    const data = await res.json();
+    if (!res.ok || !data.success) return;
+
+    userRepos = data.repos || [];
+    const select = document.getElementById('userRepoSelect');
+    const group = document.getElementById('repoSelectorGroup');
+
+    if (select && userRepos.length > 0) {
+      select.innerHTML = '<option value="">-- Choose one of your repositories --</option>' +
+        userRepos.map(r => `<option value="${escapeHtml(r.htmlUrl)}" data-branch="${escapeHtml(r.defaultBranch)}" data-name="${escapeHtml(r.name)}">${escapeHtml(r.fullName)} (${r.private ? '🔒 Private' : '🌐 Public'})</option>`).join('');
+
+      group.style.display = 'block';
+
+      select.addEventListener('change', () => {
+        const selected = select.options[select.selectedIndex];
+        if (select.value) {
+          repoUrlInput.value = select.value;
+          document.getElementById('branchName').value = selected.getAttribute('data-branch') || 'main';
+          if (!projectNameInput.value) {
+            projectNameInput.value = selected.getAttribute('data-name') || '';
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Error loading repositories:', err);
+  }
+}
+
+// Database Modal Handlers
+const dbModal = document.getElementById('dbModal');
+const btnDbInfo = document.getElementById('btnDbInfo');
+if (btnDbInfo) {
+  btnDbInfo.addEventListener('click', () => {
+    dbModal.classList.add('active');
+  });
+}
+const btnCloseDbModal = document.getElementById('btnCloseDbModal');
+const btnCloseDbModal2 = document.getElementById('btnCloseDbModal2');
+if (btnCloseDbModal) btnCloseDbModal.addEventListener('click', () => dbModal.classList.remove('active'));
+if (btnCloseDbModal2) btnCloseDbModal2.addEventListener('click', () => dbModal.classList.remove('active'));
+
+// OAuth Modal Handlers
+const oauthModal = document.getElementById('oauthModal');
+function openOauthModal() {
+  const homeEl = document.getElementById('oauthHomeUrlText');
+  const callbackEl = document.getElementById('oauthCallbackUrlText');
+  if (homeEl) homeEl.textContent = window.location.origin;
+  if (callbackEl) callbackEl.textContent = `${window.location.origin}/api/auth/github/callback`;
+  oauthModal.classList.add('active');
+}
+const btnCloseOauthModal = document.getElementById('btnCloseOauthModal');
+const btnCloseOauthModal2 = document.getElementById('btnCloseOauthModal2');
+if (btnCloseOauthModal) btnCloseOauthModal.addEventListener('click', () => oauthModal.classList.remove('active'));
+if (btnCloseOauthModal2) btnCloseOauthModal2.addEventListener('click', () => oauthModal.classList.remove('active'));
+
 // Close modal on backdrop click
-[newCampaignModal, logsModal, patGuideModal, shareModal, cronJobModal].forEach(modal => {
+[newCampaignModal, logsModal, patGuideModal, shareModal, cronJobModal, dbModal, oauthModal].forEach(modal => {
   if (!modal) return;
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
@@ -713,5 +875,16 @@ function escapeHtml(str) {
 document.addEventListener('DOMContentLoaded', () => {
   startLiveClock();
   renderHeatmapSimulator();
+  checkAuthAndDbStatus();
   fetchCampaigns();
+
+  // Check query params for auth notification
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('auth') === 'success') {
+    showToast('🎉 Successfully signed in with GitHub!', 'success');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (urlParams.get('auth') === 'error') {
+    showToast(`OAuth Error: ${urlParams.get('msg') || 'Failed to authenticate'}`, 'error');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 });

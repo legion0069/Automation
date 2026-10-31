@@ -56,8 +56,18 @@
 
         <button class="btn btn-secondary" id="btnShareApp">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-          Share with Friend
+          Share
         </button>
+
+        <!-- Dynamic Auth Container -->
+        <div id="authContainer" class="auth-box">
+          <a href="/api/auth/github" class="btn btn-github" id="btnGithubLogin">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            Sign in with GitHub
+          </a>
+        </div>
 
         <button class="btn btn-primary" id="btnOpenNewModal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -182,6 +192,20 @@
             <h4>GitHub Repository & Authentication</h4>
           </div>
 
+          <!-- Logged in OAuth Badge -->
+          <div id="oauthActiveBadge" class="verify-status success" style="display: none; margin-bottom: 12px;">
+            ✓ <strong>Connected with GitHub OAuth!</strong> You don't need to manually create a PAT—GitStreak will push directly with your authenticated account.
+          </div>
+
+          <!-- Quick Select From Your GitHub Repos -->
+          <div class="form-group" id="repoSelectorGroup" style="display: none;">
+            <label for="userRepoSelect">Select From Your GitHub Repositories</label>
+            <select id="userRepoSelect">
+              <option value="">-- Choose one of your repositories --</option>
+            </select>
+            <span class="input-hint">Selecting a repository automatically fills the URL and default branch below.</span>
+          </div>
+
           <div class="form-row">
             <div class="form-group flex-2">
               <label for="repoUrl">GitHub Repository URL <span class="required">*</span></label>
@@ -194,16 +218,16 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="githubToken">GitHub Personal Access Token (PAT) <span class="required">*</span></label>
+          <div class="form-group" id="patTokenGroup">
+            <label for="githubToken">GitHub Personal Access Token (PAT) <span id="patRequiredAsterisk" class="required">*</span></label>
             <div class="input-with-button">
-              <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" required autocomplete="off">
+              <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
               <button type="button" class="btn btn-secondary" id="btnTestGithub">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Verify Token
               </button>
             </div>
-            <span class="input-hint">
+            <span class="input-hint" id="patHint">
               Needs <code>repo</code> scope permission. Don't have one? <a href="#" id="linkPatHelp">Click here for the 30-second guide</a>.
             </span>
             <div class="verify-status" id="githubVerifyStatus"></div>
@@ -527,6 +551,113 @@
           Open cron-job.org
         </a>
         <button class="btn btn-outline" id="btnCloseCronModal2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MONGODB STATUS & SETUP ==================== -->
+  <div class="modal-backdrop" id="dbModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3>Database Configuration (MongoDB)</h3>
+          <p class="modal-subtitle">Persistent multi-user storage across restarts & cloud hosting.</p>
+        </div>
+        <button class="btn-close" id="btnCloseDbModal">&times;</button>
+      </div>
+
+      <div class="modal-body pat-guide-content">
+        <div id="dbStatusBadge" class="verify-status info" style="display: block;">
+          Active Storage Engine: <strong id="dbEngineText">Checking...</strong>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          GitStreak AI supports both <strong>MongoDB (Atlas or self-hosted)</strong> and <strong>Local Persistent Storage</strong>. When deployed to Render, setting your MongoDB URI guarantees your data and campaigns persist forever across restarts!
+        </p>
+
+        <div class="guide-step">
+          <span class="step-circle">1</span>
+          <div>
+            <strong>Get a Free MongoDB Atlas Database</strong>
+            <p>1. Sign in to <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" rel="noopener">MongoDB Atlas</a> (free tier available).</p>
+            <p>2. Create a Free Shared Cluster (M0).</p>
+            <p>3. Go to <strong>Network Access</strong> &rarr; Add IP Address: <code>0.0.0.0/0</code> (Allow Access from Anywhere).</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">2</span>
+          <div>
+            <strong>Copy Connection String</strong>
+            <p>Click <strong>Connect</strong> &rarr; <strong>Drivers</strong> &rarr; Copy the connection string:</p>
+            <code>mongodb+srv://&lt;username&gt;:&lt;password&gt;@cluster0.xxxxx.mongodb.net/gitstreak?retryWrites=true&w=majority</code>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">3</span>
+          <div>
+            <strong>Add Environment Variable</strong>
+            <p>In your <strong>Render Dashboard</strong> (or local <code>.env</code> file), add:</p>
+            <code>MONGODB_URI=your_mongodb_connection_string</code>
+            <p>Save and deploy! GitStreak will automatically connect and persist all user accounts and streak campaigns.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCloseDbModal2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: GITHUB OAUTH SETUP ==================== -->
+  <div class="modal-backdrop" id="oauthModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3>Setup GitHub OAuth Login</h3>
+          <p class="modal-subtitle">Enable 1-Click "Sign in with GitHub" for yourself and your friends.</p>
+        </div>
+        <button class="btn-close" id="btnCloseOauthModal">&times;</button>
+      </div>
+
+      <div class="modal-body pat-guide-content">
+        <div class="guide-step">
+          <span class="step-circle">1</span>
+          <div>
+            <strong>Create an OAuth App on GitHub</strong>
+            <p>Go to <a href="https://github.com/settings/developers" target="_blank" rel="noopener">GitHub Settings &rarr; Developer Settings &rarr; OAuth Apps</a> and click <strong>"New OAuth App"</strong>.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">2</span>
+          <div>
+            <strong>Fill in Application Details</strong>
+            <p>&bull; Application name: <code>GitStreak AI</code></p>
+            <p>&bull; Homepage URL: <code id="oauthHomeUrlText">https://...</code></p>
+            <p>&bull; Authorization callback URL:</p>
+            <code id="oauthCallbackUrlText">https://.../api/auth/github/callback</code>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">3</span>
+          <div>
+            <strong>Copy Client ID and Client Secret</strong>
+            <p>Click <strong>"Generate a new client secret"</strong> and add these 2 environment variables to Render (or local <code>.env</code>):</p>
+            <code>GITHUB_CLIENT_ID=your_client_id</code><br>
+            <code>GITHUB_CLIENT_SECRET=your_client_secret</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <a href="https://github.com/settings/developers" target="_blank" rel="noopener" class="btn btn-primary">
+          Open GitHub Developer Settings
+        </a>
+        <button class="btn btn-outline" id="btnCloseOauthModal2">Close</button>
       </div>
     </div>
   </div>

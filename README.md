@@ -8,6 +8,13 @@ GitStreak AI is a multi-user, deployable web platform. You can host it locally o
 
 ## ✨ Features
 
+- **🔐 GitHub OAuth Login**:
+  - Sign in with your GitHub account with 1-click!
+  - Automatically lists your public & private repositories in a dropdown.
+  - Automatically pushes commits using your authenticated GitHub session without needing to manually generate or paste Personal Access Tokens (PAT).
+- **🍃 MongoDB Atlas & Persistent Storage**:
+  - Dual-adapter database supporting both **MongoDB Atlas** (cloud-persistent) and **Local Storage** fallback.
+  - Simply paste your `MONGODB_URI` connection string, and GitStreak automatically switches to MongoDB with zero config!
 - **🕒 Daily 6:00 PM IST Automation Engine**:
   - Automatically wakes up every day at **6:00 PM IST (Asia/Kolkata)**.
   - Inspects active campaigns and calculates the target Day `X` milestone.
@@ -18,7 +25,6 @@ GitStreak AI is a multi-user, deployable web platform. You can host it locally o
   - Writes actual, production-ready source code, components, tests, and documentation adhering strictly to the day's project milestone (no fake empty commits!).
   - Partitions each day's deliverables into `N` semantic commits with Conventional Commit messages (`feat: ...`, `refactor: ...`, `test: ...`, `docs: ...`).
 - **👥 Multi-User & Shareable**:
-  - Anyone can visit the deployed URL, paste their GitHub repository link, GitHub Personal Access Token (PAT), and Gemini API key.
   - Each friend has isolated project campaigns and activity logs.
 - **✨ One-Click AI Roadmap Auto-Planner**:
   - Don't have a 30-day plan? Click **"✨ Auto-Plan with Gemini AI"** and Gemini will generate a full day-by-day technical development plan!
@@ -33,10 +39,11 @@ GitStreak AI is a multi-user, deployable web platform. You can host it locally o
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Node.js, Express, `node-cron`
+- **Backend**: Node.js, Express, `node-cron`, `jsonwebtoken`, `cookie-parser`
+- **Database**: MongoDB (Mongoose) with automatic Local Persistent Storage fallback
+- **Authentication**: GitHub OAuth 2.0 with JWT Sessions
 - **GitHub Integration**: `@octokit/rest` (uses GitHub Git Data API: blobs, trees, and commit references; zero local git cloning overhead)
-- **AI Engine**: Google Gemini API (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash` with automatic fallback)
-- **Storage**: Lightweight, persistent atomic JSON database (zero external database setup required)
+- **AI Engine**: Google Gemini API (`gemini-3.8-flash`, `gemini-3.0-flash`, `gemini-2.0-flash`, `gemini-1.5-flash` with dynamic model discovery)
 - **Frontend**: Vanilla HTML5, Modern CSS (Glassmorphism, Dark Mode, Glowing Emerald Accents), Vanilla JS
 
 ---
