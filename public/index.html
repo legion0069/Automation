@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitStreak AI — Automated GitHub Commits & Green Streak Engine</title>
-  <meta name="description" content="Maintain your daily GitHub green streaks with AI-generated project commits scheduled daily at 6:00 PM IST using Google Gemini.">
+  <meta name="description" content="Maintain your daily GitHub green streaks with AI-generated project commits scheduled daily at 10:00 AM IST using Google Gemini.">
   
   <!-- Modern Typography: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +41,7 @@
           <span class="live-dot"></span>
           <span class="clock-label">IST Time:</span>
           <span class="clock-time" id="liveIstTime">--:--:--</span>
-          <span class="cron-tag" title="Daily automation schedule">Scheduled 18:00 IST</span>
+          <span class="cron-tag" title="Daily automation schedule">Scheduled 10:00 IST</span>
         </div>
 
         <button class="btn btn-outline" id="btnPatGuide">
@@ -82,13 +82,13 @@
       <section id="minimalHomeView" class="minimal-home-section">
         <div class="home-badge">
           <span class="live-dot"></span>
-          GitStreak AI &bull; Autonomous Daily 6:00 PM IST Automation
+          GitStreak AI &bull; Autonomous Daily 10:00 AM IST Automation
         </div>
 
         <h2>Never Break Your <span>GitHub Streak</span> Again</h2>
 
         <p class="home-subtitle">
-          Automated multi-user developer engine that generates real code milestones with Google Gemini, breaks them into clean semantic commits, and pushes directly to your GitHub repository every day at 6:00 PM IST.
+          Automated multi-user developer engine that generates real code milestones with Google Gemini, breaks them into clean semantic commits, and pushes directly to your GitHub repository every day at 10:00 AM IST.
         </p>
 
         <div class="home-actions">
@@ -103,8 +103,8 @@
         <div class="home-feature-cards">
           <div class="feature-mini-card">
             <span class="feat-icon">⚡</span>
-            <h5>Daily 6:00 PM IST Automation</h5>
-            <p>Runs automatically every single day at 18:00 IST via our built-in scheduler and webhook triggers.</p>
+            <h5>Daily 10:00 AM IST Automation</h5>
+            <p>Runs automatically every single day at 10:00 IST via our built-in scheduler and webhook triggers.</p>
           </div>
 
           <div class="feature-mini-card">
@@ -137,7 +137,7 @@
               <span class="p-label">Commits Per Day</span>
             </div>
             <div class="preview-stat">
-              <span class="p-num">18:00 IST</span>
+              <span class="p-num">10:00 IST</span>
               <span class="p-label">Daily Build Time</span>
             </div>
           </div>
@@ -173,7 +173,7 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value" id="statNextRun">18:00 IST</span>
+              <span class="stat-value" id="statNextRun">10:00 IST</span>
               <span class="stat-label">Daily Cron Schedule</span>
             </div>
           </div>
@@ -195,7 +195,7 @@
             <div class="fire-badge">🔥 Never Lose Your Streak Again</div>
             <h2>Multi-User Automated GitHub Streaks with Real AI Code</h2>
             <p>
-              Share this link with your friends! Anyone can plug in their GitHub repository link, Personal Access Token, and Google Gemini API Key. Every day at <strong>6:00 PM IST</strong>, the scheduler uses Gemini to build that day's feature milestone, splitting it into clean semantic commits and pushing directly to GitHub.
+              Share this link with your friends! Anyone can plug in their GitHub repository link, Personal Access Token, and Google Gemini API Key. Every day at <strong>10:00 AM IST</strong>, the scheduler uses Gemini to build that day's feature milestone, splitting it into clean semantic commits and pushing directly to GitHub.
             </p>
           </div>
           <div class="banner-right">
@@ -220,7 +220,7 @@
           <div class="section-header">
             <div>
               <h3>Active Project Automations</h3>
-              <p class="section-desc">Projects currently running or queued for daily 6:00 PM IST builds.</p>
+              <p class="section-desc">Projects currently running or queued for daily 10:00 AM IST builds.</p>
             </div>
             <button class="btn btn-secondary btn-sm" id="btnRefreshList">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
@@ -347,8 +347,8 @@
 
             <div class="form-group">
               <label for="cronTime">Daily Execution Time</label>
-              <input type="time" id="cronTime" value="18:00">
-              <span class="input-hint">Default is <strong>18:00 (6:00 PM IST)</strong>.</span>
+              <input type="time" id="cronTime" value="10:00">
+              <span class="input-hint">Default is <strong>10:00 (10:00 AM IST)</strong>.</span>
             </div>
 
             <div class="form-group">
@@ -560,14 +560,14 @@
       <div class="modal-header">
         <div>
           <h3>cron-job.org Webhook Trigger Setup</h3>
-          <p class="modal-subtitle">Wake up this service daily at 6:00 PM IST using free cloud webcron.</p>
+          <p class="modal-subtitle">Wake up this service daily at 10:00 AM IST using free cloud webcron.</p>
         </div>
         <button class="btn-close" id="btnCloseCronModal">&times;</button>
       </div>
 
       <div class="modal-body pat-guide-content">
         <p style="font-size: 0.85rem; color: var(--text-muted);">
-          If you deploy this app on free hosting (Render, Railway, etc.), you can use <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> to wake up your server and trigger commits automatically every day at 6:00 PM IST:
+          If you deploy this app on free hosting (Render, Railway, etc.), you can use <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> to wake up your server and trigger commits automatically every day at 10:00 AM IST:
         </p>
 
         <div class="guide-step">
@@ -587,7 +587,7 @@
             <strong>Create a Job on cron-job.org</strong>
             <p>1. Go to <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> (free account).</p>
             <p>2. Click <strong>"CREATE CRONJOB"</strong>.</p>
-            <p>3. Title: <code>GitStreak Daily 6PM IST</code></p>
+            <p>3. Title: <code>GitStreak Daily 10AM IST</code></p>
             <p>4. URL: Paste the Webhook URL above.</p>
             <p style="color: #fbbf24; font-size: 0.8rem; margin-top: 4px;">⚠️ <strong>Note:</strong> Ensure the URL ends with <code>/api/cron/trigger</code>. Do not paste the base website URL alone (or cron-job.org will fail with <em>"output too large"</em>).</p>
           </div>
@@ -597,7 +597,7 @@
           <span class="step-circle">3</span>
           <div>
             <strong>Set Schedule & Timezone</strong>
-            <p>Schedule: <strong>Daily at 18:00 (6:00 PM)</strong></p>
+            <p>Schedule: <strong>Daily at 10:00 (10:00 AM)</strong></p>
             <p>Timezone: <strong>Asia/Kolkata (IST)</strong></p>
             <p>HTTP Method: <strong>GET</strong> (or <strong>POST</strong>)</p>
           </div>

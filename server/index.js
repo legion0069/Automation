@@ -94,7 +94,7 @@ app.get('/api/system/time', (req, res) => {
   res.json({
     currentTimeIst: istTime,
     formattedIst: fullIst,
-    cronTarget: '18:00 IST (6:00 PM)',
+    cronTarget: '10:00 IST (10:00 AM)',
     systemUtc: new Date().toISOString(),
     database: db.isMongoConnected() ? 'MongoDB Atlas' : 'Local Persistent Storage'
   });
@@ -401,7 +401,7 @@ app.post('/api/campaigns', async (req, res) => {
       totalDays: Number(totalDays) || 30,
       currentDay: 1,
       commitsPerDay: Number(commitsPerDay) || 2,
-      cronTime: cronTime || '18:00',
+      cronTime: cronTime || '10:00',
       timezone: timezone || 'Asia/Kolkata',
       committerName: committerName || (req.user ? req.user.displayName : verification.user.name) || verification.user.login,
       committerEmail: committerEmail || (req.user ? req.user.email : verification.user.email),
@@ -504,7 +504,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`=================================================`);
   console.log(`🚀 GitStreak AI Server running at http://localhost:${PORT}`);
-  console.log(`📅 Scheduler set for daily run at 6:00 PM IST (Asia/Kolkata)`);
+  console.log(`📅 Scheduler set for daily run at 10:00 AM IST (Asia/Kolkata)`);
   console.log(`=================================================`);
   scheduler.startScheduler();
 });

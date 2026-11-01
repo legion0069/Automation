@@ -215,14 +215,14 @@ function renderCampaigns() {
         <div class="card-meta-chips">
           <span class="meta-chip">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            ${c.cronTime || '18:00'} IST
+            ${c.cronTime || '10:00'} IST
           </span>
           <span class="meta-chip">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
             ${c.commitsPerDay} commits/day
           </span>
           <span class="meta-chip ${isTodayDone ? 'today-done' : (c.lastRunStatus === 'error' ? 'today-error' : '')}">
-            ${isTodayDone ? '✅ Today Completed' : (c.lastRunStatus === 'error' ? '⚠️ Last Run Failed (Ready to Retry)' : (c.isDueNow ? '🚀 Due Now' : `⏳ Scheduled ${c.cronTime || '18:00'} IST`))}
+            ${isTodayDone ? '✅ Today Completed' : (c.lastRunStatus === 'error' ? '⚠️ Last Run Failed (Ready to Retry)' : (c.isDueNow ? '🚀 Due Now' : `⏳ Scheduled ${c.cronTime || '10:00'} IST`))}
           </span>
           <span class="meta-chip">
             📦 ${commitsCount} Pushed

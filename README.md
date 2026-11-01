@@ -1,6 +1,6 @@
 # 🚀 GitStreak AI — Automated GitHub Streaks & Autonomous Project Builder
 
-> **Maintain unbroken green contribution streaks on GitHub with realistic, AI-generated code features pushed daily at 6:00 PM IST.**
+> **Maintain unbroken green contribution streaks on GitHub with realistic, AI-generated code features pushed daily at 10:00 AM IST.**
 
 GitStreak AI is a multi-user, deployable web platform. You can host it locally or deploy it to the cloud (Render, Railway, Fly.io, VPS), give the public link to your friends, and anyone can set up automated commits for their own GitHub repositories.
 
@@ -15,12 +15,12 @@ GitStreak AI is a multi-user, deployable web platform. You can host it locally o
 - **🍃 MongoDB Atlas & Persistent Storage**:
   - Dual-adapter database supporting both **MongoDB Atlas** (cloud-persistent) and **Local Storage** fallback.
   - Simply paste your `MONGODB_URI` connection string, and GitStreak automatically switches to MongoDB with zero config!
-- **🕒 Daily 6:00 PM IST Automation Engine**:
-  - Automatically wakes up every day at **6:00 PM IST (Asia/Kolkata)**.
+- **🕒 Daily 10:00 AM IST Automation Engine**:
+  - Automatically wakes up every day at **10:00 AM IST (Asia/Kolkata)**.
   - Inspects active campaigns and calculates the target Day `X` milestone.
 - **🌐 cron-job.org Webhook Support**:
   - Dedicated webhook endpoint: `/api/cron/trigger`
-  - Allows free external webcron services (like [cron-job.org](https://cron-job.org)) to wake up your server and trigger commits daily at 18:00 IST without keeping a local computer running.
+  - Allows free external webcron services (like [cron-job.org](https://cron-job.org)) to wake up your server and trigger commits daily at 10:00 AM IST without keeping a local computer running.
 - **🤖 Powered by Google Gemini AI**:
   - Writes actual, production-ready source code, components, tests, and documentation adhering strictly to the day's project milestone (no fake empty commits!).
   - Partitions each day's deliverables into `N` semantic commits with Conventional Commit messages (`feat: ...`, `refactor: ...`, `test: ...`, `docs: ...`).
@@ -97,7 +97,7 @@ You can run GitStreak directly inside GitHub Actions with **zero servers, zero h
    *(Note: Even without a key, GitStreak's built-in autonomous resilient code generator will craft realistic milestone code and tests to preserve your streak!)*
 
 3. **Run or Schedule**:
-   - The workflow runs automatically every day at **6:00 PM IST (18:00 IST / 12:30 UTC)**.
+   - The workflow runs automatically every day at **10:00 AM IST (10:00 IST / 04:30 UTC)**.
    - You can also trigger it manually anytime by going to the **Actions** tab on GitHub → select **GitStreak Daily Automation** → click **Run workflow**!
 
 ---
@@ -130,7 +130,7 @@ docker run -d -p 3000:3000 -v $(pwd)/data:/app/data --name gitstreak gitstreak-a
 ```
 ├── server/
 │   ├── index.js          # Express REST API & static file server
-│   ├── scheduler.js      # node-cron scheduler (6:00 PM IST daily trigger)
+│   ├── scheduler.js      # node-cron scheduler (10:00 AM IST daily trigger)
 │   ├── gemini.js         # Gemini API code generator & auto-planner
 │   ├── github.js         # GitHub Octokit API integration (commits, trees, branches)
 │   ├── streakRunner.js   # Execution orchestrator for daily streak jobs
