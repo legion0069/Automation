@@ -312,8 +312,8 @@ async function main() {
   // If TARGET_REPO is specified (e.g. "legion0069/to-do-list"), clone and work inside it
   if (TARGET_REPO) {
     console.log(`🎯 TARGET_REPO detected: ${TARGET_REPO}`);
-    const token = GITHUB_TOKEN;
-    if (!token) throw new Error('GITHUB_TOKEN or TARGET_TOKEN is required to push to target repository.');
+    const token = process.env.TARGET_TOKEN || process.env.PAT_TOKEN || GITHUB_TOKEN;
+    if (!token) throw new Error('GITHUB_TOKEN, TARGET_TOKEN, or PAT_TOKEN is required to push to target repository.');
 
     const tempDir = path.join(process.cwd(), '.gitstreak-target-workspace');
     if (fs.existsSync(tempDir)) {
@@ -322,7 +322,14 @@ async function main() {
 
     console.log(`Cloning https://github.com/${TARGET_REPO}.git into workspace...`);
     const cloneUrl = `https://x-access-token:${token}@github.com/${TARGET_REPO}.git`;
-    runCmd(`git clone ${cloneUrl} ${tempDir}`);
+    try {
+      runCmd(`git clone ${cloneUrl} ${tempDir}`);
+    } catch (cloneErr) {
+      console.error(`❌ Failed to clone target repository ${TARGET_REPO}:`, cloneErr.message);
+      console.log('💡 Note: Pushing to another repository from this workflow requires a GitHub Personal Access Token (PAT) with repo scope stored in secrets.PAT_TOKEN.');
+      console.log('💡 Alternatively, place the workflow directly in that repository to run with zero PAT!');
+      throw cloneErr;
+    }
     workingDir = tempDir;
   }
 

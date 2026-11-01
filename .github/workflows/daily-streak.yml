@@ -6,6 +6,10 @@ on:
     - cron: '30 12 * * *'
   workflow_dispatch:
     inputs:
+      target_repo:
+        description: 'Target Repository (e.g. legion0069/to-do-list or leave blank for current repo)'
+        required: false
+        default: ''
       milestone:
         description: 'Custom Milestone / Task for today (optional)'
         required: false
@@ -42,10 +46,11 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TARGET_REPO: ${{ secrets.TARGET_REPO }}
-          TARGET_TOKEN: ${{ secrets.TARGET_TOKEN || secrets.PAT_TOKEN }}
+          TARGET_REPO: ${{ github.event.inputs.target_repo || secrets.TARGET_REPO || '' }}
+          TARGET_TOKEN: ${{ secrets.PAT_TOKEN || secrets.TARGET_TOKEN || secrets.GITHUB_TOKEN }}
           COMMITS_PER_DAY: ${{ github.event.inputs.commits_count || '2' }}
           INPUT_MILESTONE: ${{ github.event.inputs.milestone }}
           INPUT_FORCE: ${{ github.event.inputs.force || 'false' }}
         run: |
           node scripts/streak-runner.js
+

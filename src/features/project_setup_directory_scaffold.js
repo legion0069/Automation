@@ -19,3 +19,4 @@ class ProjectSetupDirectoryScaffold {
 }
 
 module.exports = { ProjectSetupDirectoryScaffold };
+
