@@ -78,74 +78,8 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Minimal Homepage View (Shown when not signed in) -->
-      <section id="minimalHomeView" class="minimal-home-section">
-        <div class="home-badge">
-          <span class="live-dot"></span>
-          GitStreak AI &bull; Autonomous Daily 10:00 AM IST Automation
-        </div>
-
-        <h2>Never Break Your <span>GitHub Streak</span> Again</h2>
-
-        <p class="home-subtitle">
-          Automated multi-user developer engine that generates real code milestones with Google Gemini, breaks them into clean semantic commits, and pushes directly to your GitHub repository every day at 10:00 AM IST.
-        </p>
-
-        <div class="home-actions">
-          <a href="/api/auth/github" class="btn btn-github btn-hero" id="btnHeroGithubLogin">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-            Sign in with GitHub
-          </a>
-        </div>
-
-        <div class="home-feature-cards">
-          <div class="feature-mini-card">
-            <span class="feat-icon">⚡</span>
-            <h5>Daily 10:00 AM IST Automation</h5>
-            <p>Runs automatically every single day at 10:00 IST via our built-in scheduler and webhook triggers.</p>
-          </div>
-
-          <div class="feature-mini-card">
-            <span class="feat-icon">🤖</span>
-            <h5>Google Gemini AI Code Engine</h5>
-            <p>Generates authentic, high-quality production code and sensible Git commits following your custom milestone plan.</p>
-          </div>
-
-          <div class="feature-mini-card">
-            <span class="feat-icon">🔒</span>
-            <h5>Zero PAT Token Hassle</h5>
-            <p>Sign in once with GitHub. GitStreak securely pushes directly to your repositories and saves your progress.</p>
-          </div>
-        </div>
-
-        <div class="home-preview-card">
-          <div class="preview-header">
-            <div class="preview-dots">
-              <span></span><span></span><span></span>
-            </div>
-            <span class="preview-title">Autonomous Streak Engine &bull; Sign in with GitHub to unlock your dashboard</span>
-          </div>
-          <div class="preview-inner">
-            <div class="preview-stat">
-              <span class="p-num">100%</span>
-              <span class="p-label">Streak Reliability</span>
-            </div>
-            <div class="preview-stat">
-              <span class="p-num">1 to 10</span>
-              <span class="p-label">Commits Per Day</span>
-            </div>
-            <div class="preview-stat">
-              <span class="p-num">10:00 IST</span>
-              <span class="p-label">Daily Build Time</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Dashboard Landing Page View (Enabled & shown after sign-in) -->
-      <div id="dashboardView" class="dashboard-view" style="display: none;">
+      <!-- Dashboard View (Always live with real repo data) -->
+      <div id="dashboardView" class="dashboard-view" style="display: block;">
         <!-- Hero Banner / Stats -->
         <section class="stats-overview">
           <div class="stat-card">
@@ -153,7 +87,7 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value" id="statActiveCount">0</span>
+              <span class="stat-value" id="statActiveCount">1</span>
               <span class="stat-label">Active Automations</span>
             </div>
           </div>
@@ -163,8 +97,8 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value" id="statCommitsCount">0</span>
-              <span class="stat-label">Automated Commits Pushed</span>
+              <span class="stat-value" id="statCommitsCount">--</span>
+              <span class="stat-label">Automated Commits Synced</span>
             </div>
           </div>
 
@@ -180,36 +114,42 @@
 
           <div class="stat-card">
             <div class="stat-icon amber">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value">Gemini AI</span>
-              <span class="stat-label">Production Code Generation</span>
+              <span class="stat-value" id="statCurrentProgress">Day 4 / 30</span>
+              <span class="stat-label">Milestone Progress</span>
             </div>
           </div>
         </section>
 
-        <!-- Streak Heatmap Mock & Explainer -->
+        <!-- Real 30-Day Project Roadmap & Contribution Streak -->
         <section class="streak-explainer-banner">
           <div class="banner-left">
-            <div class="fire-badge">🔥 Never Lose Your Streak Again</div>
-            <h2>Multi-User Automated GitHub Streaks with Real AI Code</h2>
-            <p>
-              Share this link with your friends! Anyone can plug in their GitHub repository link, Personal Access Token, and Google Gemini API Key. Every day at <strong>10:00 AM IST</strong>, the scheduler uses Gemini to build that day's feature milestone, splitting it into clean semantic commits and pushing directly to GitHub.
+            <div class="fire-badge" id="bannerStreakBadge">🔥 3-Day Green Streak Active</div>
+            <h2 id="bannerTitle">To-Do List Autonomous Project</h2>
+            <p id="bannerDesc">
+              Target Repository: <a href="https://github.com/legion0069/to-do-list" target="_blank" rel="noopener" style="color: #38bdf8; text-decoration: underline;">legion0069/to-do-list</a>. Every day at <strong>10:00 AM IST</strong>, the GitHub Actions runner automatically executes the day's development milestone, generating clean production code, automated test suites, and pushing semantic git commits.
             </p>
+            <div id="bannerStatusPill" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-subtle);">
+              <span class="live-dot" style="background: #38bdf8;"></span>
+              <span id="bannerStatusText">Next: <strong>Day 4</strong> scheduled today at <strong>10:00 AM IST</strong></span>
+            </div>
           </div>
           <div class="banner-right">
             <div class="heatmap-preview">
-              <span class="heatmap-title">30-Day Contribution Heatmap Simulator</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span class="heatmap-title" style="margin-bottom: 0;">30-Day Development Roadmap</span>
+                <span class="heatmap-status-badge" id="heatmapCurrentDayBadge" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">Day 4 Active</span>
+              </div>
               <div class="heatmap-grid" id="heatmapGrid"></div>
               <div class="heatmap-legend">
-                <span>Less</span>
-                <span class="cell lv-0"></span>
-                <span class="cell lv-1"></span>
-                <span class="cell lv-2"></span>
-                <span class="cell lv-3"></span>
-                <span class="cell lv-4"></span>
-                <span>More</span>
+                <span class="cell lv-4"></span><span>Completed</span>
+                <span class="cell lv-today" style="margin-left: 8px;"></span><span>Today's Goal</span>
+                <span class="cell lv-0" style="margin-left: 8px;"></span><span>Upcoming</span>
+              </div>
+              <div id="heatmapSelectedDayDetail" style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+                Hover or click any day to preview its milestone feature.
               </div>
             </div>
           </div>

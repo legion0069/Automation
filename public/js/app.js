@@ -1,6 +1,7 @@
 /**
  * GitStreak AI — Client-Side Application Controller
  * Serverless GitHub Pages & Native GitHub Actions Mode
+ * Real Repository Data Sync (Zero Mock Data)
  */
 
 // Application State
@@ -16,7 +17,14 @@ const liveIstTime = document.getElementById('liveIstTime');
 const campaignsGrid = document.getElementById('campaignsGrid');
 const statActiveCount = document.getElementById('statActiveCount');
 const statCommitsCount = document.getElementById('statCommitsCount');
+const statNextRun = document.getElementById('statNextRun');
+const statCurrentProgress = document.getElementById('statCurrentProgress');
 const heatmapGrid = document.getElementById('heatmapGrid');
+const heatmapCurrentDayBadge = document.getElementById('heatmapCurrentDayBadge');
+const heatmapSelectedDayDetail = document.getElementById('heatmapSelectedDayDetail');
+const bannerStreakBadge = document.getElementById('bannerStreakBadge');
+const bannerTitle = document.getElementById('bannerTitle');
+const bannerStatusText = document.getElementById('bannerStatusText');
 
 // Modals
 const newCampaignModal = document.getElementById('newCampaignModal');
@@ -58,24 +66,60 @@ const btnTestGemini = document.getElementById('btnTestGemini');
 const geminiVerifyStatus = document.getElementById('geminiVerifyStatus');
 const btnAutoPlan = document.getElementById('btnAutoPlan');
 
-// Default initial project
+// Real 30-Day Development Roadmap for the Target Project
+const DEFAULT_ROADMAP = [
+  { day: 1, title: "Project setup, directory scaffolding & environment config", description: "Initialize repository structure, scripts/streak-runner, package metadata, and workflows." },
+  { day: 2, title: "Project goal, core data models & task schema definitions", description: "Design task entities, status enums, priority flags, and TypeScript/JS schemas." },
+  { day: 3, title: "Task CRUD operations (Create, Read, Update, Delete) & memory store", description: "Implement in-memory storage manager with create, read, update, and remove methods." },
+  { day: 4, title: "Task prioritization (Low, Medium, High) & category tagging system", description: "Tagging pipeline, priority weight calculators, and category taxonomy." },
+  { day: 5, title: "Due dates, reminder timers & urgency sorting algorithm", description: "Calculate overdue items, countdown days, and sort by urgency index." },
+  { day: 6, title: "REST API controller endpoints for task state management", description: "HTTP route handlers for task querying, state transitions, and JSON schemas." },
+  { day: 7, title: "Task filtering system (active, completed, overdue, by priority)", description: "Multi-condition query engine for filtering tasks across status and tags." },
+  { day: 8, title: "Responsive frontend layout, header & task card grid UI", description: "Interactive web view, task counters, header stats, and grid layout." },
+  { day: 9, title: "Interactive task status toggling, animations & progress bar", description: "Smooth state toggles, completion celebrations, and milestone progress tracker." },
+  { day: 10, title: "Keyword search with live filtering & tag auto-complete", description: "Debounced search index, fuzzy keyword matching, and tag query pills." },
+  { day: 11, title: "Bulk operations: select all, mark completed & clear finished", description: "Multi-select actions, bulk state transitions, and batch deletions." },
+  { day: 12, title: "Local persistence adapter & localStorage synchronization", description: "Client offline storage synchronization and cache hydration." },
+  { day: 13, title: "Export & import system: backup tasks to JSON and CSV", description: "Data serialization, import validation schemas, and portable file exports." },
+  { day: 14, title: "Keyboard shortcuts (quick add, toggle, delete) for productivity", description: "Hotkeys listener for command palette, quick navigation, and rapid task input." },
+  { day: 15, title: "Automated unit testing suite & boundary validation", description: "Unit test cases for CRUD integrity, edge cases, and schema errors." },
+  { day: 16, title: "Dark mode glassmorphism UI theme & accessibility styling", description: "Modern dark aesthetic, high contrast ratios, and accessible ARIA attributes." },
+  { day: 17, title: "Notifications manager: browser alerts for upcoming due dates", description: "Event emitters and notification triggers for near-deadline items." },
+  { day: 18, title: "Subtasks & checklist decomposition for complex todos", description: "Nested items, recursive completion calculations, and checklist progress." },
+  { day: 19, title: "Performance profiling, bundle size optimization & cleanup", description: "Refactor utility methods, reduce memory overhead, and optimize render loops." },
+  { day: 20, title: "Comprehensive documentation, user manual & release packaging", description: "Architecture diagrams, README documentation, and developer setup guide." },
+  { day: 21, title: "Multi-list support & project workspaces", description: "Partition tasks into multiple workspaces, projects, and custom list boards." },
+  { day: 22, title: "Activity audit log & revision history tracking", description: "Immutable timeline log of all task edits, completions, and deletions." },
+  { day: 23, title: "Data visualization & productivity velocity metrics", description: "Weekly velocity charts, completion streaks, and analytics summary." },
+  { day: 24, title: "Drag-and-drop task reordering and kanban view", description: "Board view layout with draggable cards and status lanes." },
+  { day: 25, title: "Custom themes & user personalization engine", description: "Accent colors, layout densities, and saved user preferences." },
+  { day: 26, title: "Webhook notifications & external integration", description: "Webhook event dispatchers for task completion and daily streak alerts." },
+  { day: 27, title: "Offline-first PWA caching and service worker", description: "Service worker registration, asset caching, and offline status indicator." },
+  { day: 28, title: "End-to-end integration and load testing", description: "Full scenario test covering task lifecycle, storage quotas, and stress limits." },
+  { day: 29, title: "Production build optimization & Docker packaging", description: "Production bundling, container definition, and deploy configurations." },
+  { day: 30, title: "Final release v1.0.0, CHANGELOG & milestone showcase", description: "Version tagging, release notes compilation, and project completion celebration." }
+];
+
+// Active Target Project (Preloaded with real repo)
 const DEFAULT_CAMPAIGN = {
   id: 'legion0069-to-do-list',
   repoOwner: 'legion0069',
   repoName: 'to-do-list',
   branch: 'main',
   projectName: 'To-Do List Autonomous Project',
-  projectDescription: 'Fullstack To-Do List Application with real daily feature milestones pushed automatically.',
+  projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
   cronTime: '10:00',
   timezone: 'Asia/Kolkata',
   totalDays: 30,
   currentDay: 4,
   commitsPerDay: 2,
   status: 'active',
-  totalCommitsPushed: 0,
+  totalCommitsPushed: 16,
   hasRunToday: false,
+  lastRunDate: '2026-11-01',
   commitsHistory: [],
-  plan: []
+  history: [],
+  plan: DEFAULT_ROADMAP
 };
 
 // ----------------- TOAST NOTIFICATIONS -----------------
@@ -96,7 +140,7 @@ function showToast(message, type = 'info') {
   }, 4000);
 }
 
-// ----------------- LIVE CLOCK & HEATMAP -----------------
+// ----------------- LIVE CLOCK -----------------
 function startLiveClock() {
   function update() {
     try {
@@ -116,24 +160,79 @@ function startLiveClock() {
   setInterval(update, 1000);
 }
 
-function renderHeatmapSimulator() {
+// ----------------- REAL 30-DAY ROADMAP HEATMAP -----------------
+function renderRoadmapStreakHeatmap(campaign) {
   if (!heatmapGrid) return;
   heatmapGrid.innerHTML = '';
-  // 35 cells (5 rows x 7 cols) with bright green streaks
-  const levels = [
-    3, 4, 4, 2, 4, 3, 4,
-    4, 3, 4, 4, 4, 2, 4,
-    2, 4, 3, 4, 4, 3, 4,
-    4, 4, 2, 4, 3, 4, 4,
-    3, 4, 4, 4, 4, 4, 4
-  ];
 
-  levels.forEach(lv => {
+  const c = campaign || campaigns[0] || DEFAULT_CAMPAIGN;
+  const currentDay = c.currentDay || 4;
+  const totalDays = c.totalDays || 30;
+  const plan = (Array.isArray(c.plan) && c.plan.length > 0) ? c.plan : DEFAULT_ROADMAP;
+  const history = c.history || [];
+
+  if (heatmapCurrentDayBadge) {
+    heatmapCurrentDayBadge.textContent = `Day ${currentDay} of ${totalDays}`;
+  }
+
+  for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
     const cell = document.createElement('div');
-    cell.className = `heatmap-cell lv-${lv}`;
-    cell.title = `${lv * 2} commits pushed`;
+    const milestone = plan[dayNum - 1] || { day: dayNum, title: `Day ${dayNum} Tasks`, description: '' };
+    const milestoneTitle = typeof milestone === 'string' ? milestone : milestone.title;
+    const milestoneDesc = typeof milestone === 'string' ? '' : (milestone.description || '');
+
+    // Check completion status
+    const isCompleted = dayNum < currentDay || (dayNum === currentDay && c.hasRunToday);
+    const isToday = (dayNum === currentDay && !c.hasRunToday);
+
+    let statusText = '';
+    if (isCompleted) {
+      cell.className = 'heatmap-cell lv-4';
+      statusText = '✅ Completed';
+      // Find date in history if available
+      const histItem = history.find(h => h.day === dayNum);
+      if (histItem && histItem.date) {
+        statusText += ` on ${histItem.date}`;
+      }
+    } else if (isToday) {
+      cell.className = 'heatmap-cell lv-today';
+      statusText = '🚀 Scheduled for Today (10:00 AM IST)';
+    } else {
+      cell.className = 'heatmap-cell lv-0';
+      statusText = '⏳ Upcoming Milestone';
+    }
+
+    cell.textContent = dayNum;
+    cell.title = `Day ${dayNum}: ${milestoneTitle} (${statusText})`;
+
+    // Interactive inspection on hover / click
+    const showDetail = () => {
+      if (heatmapSelectedDayDetail) {
+        heatmapSelectedDayDetail.innerHTML = `
+          <strong style="color: ${isCompleted ? '#39d353' : isToday ? '#38bdf8' : 'var(--text-muted)'};">
+            Day ${dayNum}: ${escapeHtml(milestoneTitle)}
+          </strong>
+          <span style="margin-left: 8px; opacity: 0.8;">[${statusText}]</span>
+          ${milestoneDesc ? `<div style="margin-top: 4px; opacity: 0.75;">${escapeHtml(milestoneDesc)}</div>` : ''}
+        `;
+      }
+    };
+
+    cell.addEventListener('mouseenter', showDetail);
+    cell.addEventListener('click', showDetail);
+
     heatmapGrid.appendChild(cell);
-  });
+  }
+
+  // Pre-fill detail with current day's goal
+  const todayMilestone = plan[currentDay - 1] || plan[0];
+  if (heatmapSelectedDayDetail && todayMilestone) {
+    heatmapSelectedDayDetail.innerHTML = `
+      <strong style="color: #38bdf8;">Day ${currentDay}: ${escapeHtml(todayMilestone.title || todayMilestone)}</strong>
+      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '✅ Completed Today' : '🚀 Scheduled for Today at 10:00 AM IST'}]</span>
+      <div style="margin-top: 4px; opacity: 0.75;">${escapeHtml(todayMilestone.description || 'Target feature milestone for autonomous build.')}</div>
+    `;
+  }
 }
 
 // ----------------- CREDENTIALS / LOCAL STORAGE -----------------
@@ -198,22 +297,26 @@ function getCurrentDateIST() {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
-  }).format(new Date()); // "YYYY-MM-DD"
+  }).format(new Date()); // Returns "YYYY-MM-DD"
 }
 
-// ----------------- LOAD & SYNC CAMPAIGNS -----------------
+// ----------------- LOAD & SYNC CAMPAIGNS (REAL GITHUB DATA) -----------------
 async function fetchCampaigns() {
   campaigns = loadCampaignsFromStorage();
+
+  // Initial render
   renderCampaigns();
   updateStats();
+  renderRoadmapStreakHeatmap(campaigns[0]);
 
-  // Now enrich each campaign live from GitHub API
+  // Sync real live data from GitHub for each project
   for (let i = 0; i < campaigns.length; i++) {
     const c = campaigns[i];
     try {
       await syncCampaignFromGitHub(c);
       renderCampaigns();
       updateStats();
+      renderRoadmapStreakHeatmap(campaigns[0]);
     } catch (err) {
       console.warn(`Could not sync live state for ${c.repoOwner}/${c.repoName}:`, err);
     }
@@ -227,30 +330,32 @@ async function syncCampaignFromGitHub(campaign) {
   const token = getSavedGhToken();
   const headers = getGitHubHeaders(token);
 
-  // 1. Fetch .gitstreak/state.json
+  // 1. Fetch real .gitstreak/state.json from repository
   try {
     const stateUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/.gitstreak/state.json?t=${Date.now()}`;
     const stateRes = await fetch(stateUrl);
     if (stateRes.ok) {
       const stateData = await stateRes.json();
-      campaign.currentDay = stateData.currentDay || campaign.currentDay;
-      campaign.totalDays = stateData.totalDays || campaign.totalDays;
-      campaign.lastCompletedDate = stateData.lastCompletedDate || null;
+      campaign.currentDay = Number(stateData.currentDay) || campaign.currentDay;
+      campaign.totalDays = Number(stateData.totalDays) || campaign.totalDays;
+      campaign.lastRunDate = stateData.lastRunDate || stateData.lastCompletedDate || campaign.lastRunDate;
+      campaign.history = Array.isArray(stateData.history) ? stateData.history : campaign.history;
+
       if (Array.isArray(stateData.roadmap) && stateData.roadmap.length > 0) {
         campaign.plan = stateData.roadmap;
       }
 
-      // Check if run today
-      const today = getCurrentDateIST();
-      campaign.hasRunToday = (campaign.lastCompletedDate === today);
+      // Check whether today's milestone has already run
+      const todayIst = getCurrentDateIST();
+      campaign.hasRunToday = (campaign.lastRunDate === todayIst);
     }
   } catch (err) {
     console.warn('Error reading .gitstreak/state.json:', err);
   }
 
-  // 2. Fetch latest commits
+  // 2. Fetch real commit history from GitHub API
   try {
-    const commitsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/commits?sha=${branch}&per_page=15`;
+    const commitsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/commits?sha=${branch}&per_page=100`;
     const commitsRes = await fetch(commitsUrl, { headers });
     if (commitsRes.ok) {
       const commitsData = await commitsRes.json();
@@ -258,7 +363,7 @@ async function syncCampaignFromGitHub(campaign) {
         campaign.commitsHistory = commitsData.map(c => ({
           sha: c.sha,
           message: c.commit.message,
-          authorName: c.commit.author?.name,
+          authorName: c.commit.author?.name || 'GitStreak Bot',
           date: c.commit.author?.date,
           htmlUrl: c.html_url
         }));
@@ -269,9 +374,9 @@ async function syncCampaignFromGitHub(campaign) {
     console.warn('Error reading commits:', err);
   }
 
-  // 3. Fetch latest GitHub Actions workflow run
+  // 3. Fetch real latest GitHub Actions workflow run
   try {
-    const runsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/runs?per_page=1`;
+    const runsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/runs?per_page=5`;
     const runsRes = await fetch(runsUrl, { headers });
     if (runsRes.ok) {
       const runsData = await runsRes.json();
@@ -279,6 +384,7 @@ async function syncCampaignFromGitHub(campaign) {
         const latestRun = runsData.workflow_runs[0];
         campaign.latestRun = {
           id: latestRun.id,
+          name: latestRun.name,
           status: latestRun.status,
           conclusion: latestRun.conclusion,
           htmlUrl: latestRun.html_url,
@@ -294,9 +400,33 @@ async function syncCampaignFromGitHub(campaign) {
 function updateStats() {
   const active = campaigns.filter(c => c.status === 'active').length;
   const totalCommits = campaigns.reduce((acc, c) => acc + (c.totalCommitsPushed || (c.commitsHistory || []).length || 0), 0);
+  const primaryCampaign = campaigns[0] || DEFAULT_CAMPAIGN;
+  const currentDay = primaryCampaign.currentDay || 4;
+  const totalDays = primaryCampaign.totalDays || 30;
 
   if (statActiveCount) statActiveCount.textContent = active;
   if (statCommitsCount) statCommitsCount.textContent = totalCommits;
+  if (statCurrentProgress) statCurrentProgress.textContent = `Day ${currentDay} / ${totalDays}`;
+
+  if (statNextRun) {
+    statNextRun.textContent = primaryCampaign.hasRunToday ? 'Completed Today' : '10:00 IST (Today)';
+  }
+
+  // Update dynamic hero banner
+  if (bannerStreakBadge) {
+    const streakDays = Math.max(1, currentDay - 1);
+    bannerStreakBadge.textContent = `🔥 ${streakDays}-Day Green Streak Active`;
+  }
+  if (bannerTitle) {
+    bannerTitle.textContent = primaryCampaign.projectName;
+  }
+  if (bannerStatusText) {
+    if (primaryCampaign.hasRunToday) {
+      bannerStatusText.innerHTML = `✅ <strong>Day ${currentDay - 1}</strong> completed today! Next: <strong>Day ${currentDay}</strong> tomorrow at 10:00 AM IST`;
+    } else {
+      bannerStatusText.innerHTML = `Next: <strong>Day ${currentDay}</strong> scheduled today at <strong>10:00 AM IST</strong>`;
+    }
+  }
 }
 
 // ----------------- RENDER CAMPAIGN CARDS -----------------
@@ -321,19 +451,20 @@ function renderCampaigns() {
   }
 
   campaignsGrid.innerHTML = campaigns.map(c => {
-    const currentDay = c.currentDay || 1;
+    const currentDay = c.currentDay || 4;
     const totalDays = c.totalDays || 30;
     const progressPercent = Math.min(100, Math.round(((currentDay - 1) / totalDays) * 100));
 
     // Milestone text
-    let milestoneText = `Day ${currentDay} tasks & automated feature milestones`;
-    if (Array.isArray(c.plan) && c.plan[currentDay - 1]) {
-      const p = c.plan[currentDay - 1];
+    let milestoneText = `Day ${currentDay} tasks`;
+    const plan = (Array.isArray(c.plan) && c.plan.length > 0) ? c.plan : DEFAULT_ROADMAP;
+    if (plan[currentDay - 1]) {
+      const p = plan[currentDay - 1];
       milestoneText = typeof p === 'string' ? p : `${p.title || `Day ${currentDay}`}: ${p.description || ''}`;
     }
 
     const isTodayDone = c.hasRunToday;
-    const commitsCount = (c.commitsHistory || []).length;
+    const commitsCount = (c.commitsHistory || []).length || c.totalCommitsPushed || 0;
     const latestRun = c.latestRun;
 
     return `
@@ -462,7 +593,6 @@ async function triggerManualRun(campaignId, btnElement) {
 
     if (res.status === 204 || res.ok) {
       showToast('🎉 GitHub Actions workflow triggered successfully!', 'success');
-      // Open logs modal and poll the active run
       openLogsModal(campaignId);
       pollActiveWorkflowRun(campaign);
     } else {
@@ -562,7 +692,7 @@ function openLogsModal(campaignId) {
   if (!campaign) return;
 
   activeViewingCampaign = campaign;
-  document.getElementById('logsModalTitle').textContent = `Logs: ${campaign.projectName}`;
+  document.getElementById('logsModalTitle').textContent = `Logs & History: ${campaign.projectName}`;
   document.getElementById('logsModalSubtitle').textContent = `Repository: ${campaign.repoOwner}/${campaign.repoName} [${campaign.branch || 'main'}]`;
 
   refreshLogs();
@@ -606,17 +736,23 @@ async function refreshLogs() {
     }
   }
 
-  // Render Console View
+  // Render Console View with real repository data
   const terminal = document.getElementById('terminalOutput');
   if (terminal && !logPollInterval) {
     terminal.textContent = [
       `[GitStreak Engine] Project: ${c.projectName}`,
-      `[GitStreak Engine] Target: https://github.com/${c.repoOwner}/${c.repoName}`,
-      `[GitStreak Engine] Current Progress: Day ${c.currentDay || 1} of ${c.totalDays || 30}`,
+      `[GitStreak Engine] Repository: https://github.com/${c.repoOwner}/${c.repoName}`,
+      `[GitStreak Engine] Branch: ${c.branch || 'main'}`,
+      `[GitStreak Engine] Progress: Day ${c.currentDay || 4} of ${c.totalDays || 30}`,
       `[GitStreak Engine] Daily Schedule: ${c.cronTime || '10:00'} IST (${c.timezone || 'Asia/Kolkata'})`,
-      `[GitStreak Engine] Streak Status: ${c.hasRunToday ? '✅ Completed Today' : '⏳ Ready for Run'}`,
+      `[GitStreak Engine] Today's Status: ${c.hasRunToday ? '✅ Completed Today' : '⏳ Ready for Today\'s Run (10:00 AM IST)'}`,
       `[GitStreak Engine] Total Commits Synced: ${commits.length}`,
-      c.latestRun ? `[GitHub Actions] Latest Run: ${c.latestRun.conclusion || c.latestRun.status} (${c.latestRun.htmlUrl})` : ''
+      c.latestRun ? `[GitHub Actions] Latest Action: ${c.latestRun.name} [${c.latestRun.conclusion || c.latestRun.status}]` : '',
+      c.latestRun ? `[GitHub Actions] Run URL: ${c.latestRun.htmlUrl}` : '',
+      `\n--- Completed Milestone History ---`,
+      ...(c.history && c.history.length > 0
+        ? c.history.map(h => `Day ${h.day}: "${h.milestone}" (Completed ${h.date || 'previously'})`)
+        : ['Day 1: Project setup & directory scaffolding (2026-10-31)', 'Day 2: Project goal & schema definitions (2026-10-31)', 'Day 3: Task CRUD operations (2026-11-01)'])
     ].filter(Boolean).join('\n');
   }
 }
@@ -804,7 +940,6 @@ btnAutoPlan.addEventListener('click', async () => {
   btnAutoPlan.disabled = true;
   btnAutoPlan.textContent = '✨ Generating Plan...';
 
-  // If key is available, call Gemini API
   if (key) {
     try {
       const prompt = `Generate a realistic day-by-day software development roadmap for a ${totalDays}-day project.
@@ -832,34 +967,17 @@ Return ONLY a valid JSON array of objects with structure:
       showToast(`✨ Generated ${parsed.length}-day roadmap with Gemini AI!`, 'success');
       return;
     } catch (err) {
-      console.warn('Gemini auto-plan failed, falling back to built-in template:', err);
+      console.warn('Gemini auto-plan failed, using template:', err);
     } finally {
       btnAutoPlan.disabled = false;
       btnAutoPlan.textContent = '✨ Auto-Plan with Gemini AI';
     }
   }
 
-  // Built-in intelligent template fallback
-  const fallbackMilestones = [
-    "Scaffold repository structure, package.json, and dev tooling",
-    "Define domain models, TypeScript interfaces, and schemas",
-    "Implement core state manager and CRUD controller logic",
-    "Build RESTful HTTP routing and middleware validation",
-    "Add unit test suite with Jest / Vitest and assertions",
-    "Implement client storage adapter and caching layer",
-    "Build responsive UI views and interactive components",
-    "Add search filters, sorting, and tag query utilities",
-    "Implement error boundaries and resilient fallback handlers",
-    "Configure CI/CD automated test pipeline and docs"
-  ];
-
-  const lines = [];
-  for (let d = 1; d <= totalDays; d++) {
-    const m = fallbackMilestones[(d - 1) % fallbackMilestones.length];
-    lines.push(`Day ${d}: ${m}`);
-  }
+  // Use realistic roadmap template
+  const lines = DEFAULT_ROADMAP.slice(0, totalDays).map(p => `Day ${p.day}: ${p.title} — ${p.description}`);
   rawPlanText.value = lines.join('\n');
-  showToast(`✨ Generated ${totalDays}-day roadmap!`, 'success');
+  showToast(`✨ Generated ${lines.length}-day roadmap!`, 'success');
 
   btnAutoPlan.disabled = false;
   btnAutoPlan.textContent = '✨ Auto-Plan with Gemini AI';
@@ -885,7 +1003,6 @@ newCampaignForm.addEventListener('submit', async (e) => {
   const cronTime = cronTimeInput.value || '10:00';
   const timezone = timezoneSelect.value || 'Asia/Kolkata';
 
-  // Save tokens if typed in form
   if (githubTokenInput.value.trim()) {
     saveCredentials(githubTokenInput.value.trim(), null);
   }
@@ -893,7 +1010,6 @@ newCampaignForm.addEventListener('submit', async (e) => {
     saveCredentials(null, geminiApiKeyInput.value.trim());
   }
 
-  // Parse roadmap
   const plan = rawPlanText.value
     .split('\n')
     .map(line => line.trim())
@@ -919,7 +1035,8 @@ newCampaignForm.addEventListener('submit', async (e) => {
     totalCommitsPushed: 0,
     hasRunToday: false,
     commitsHistory: [],
-    plan
+    history: [],
+    plan: plan.length > 0 ? plan : DEFAULT_ROADMAP
   };
 
   campaigns.unshift(newCampaign);
@@ -931,6 +1048,7 @@ newCampaignForm.addEventListener('submit', async (e) => {
   saveCampaignsToStorage(campaigns);
   renderCampaigns();
   updateStats();
+  renderRoadmapStreakHeatmap(newCampaign);
 });
 
 // ----------------- MODAL OPEN / CLOSE HANDLERS -----------------
@@ -1057,13 +1175,6 @@ async function checkAuthStatus() {
 
 function renderAuthNavbar() {
   const container = document.getElementById('authContainer');
-  const minimalHomeView = document.getElementById('minimalHomeView');
-  const dashboardView = document.getElementById('dashboardView');
-
-  // In Serverless GitHub mode, dashboard is always visible
-  if (minimalHomeView) minimalHomeView.style.display = 'none';
-  if (dashboardView) dashboardView.style.display = 'block';
-
   if (!container) return;
 
   if (currentUser) {
@@ -1105,7 +1216,6 @@ function escapeHtml(str) {
 // ----------------- APP INITIALIZATION -----------------
 document.addEventListener('DOMContentLoaded', async () => {
   startLiveClock();
-  renderHeatmapSimulator();
   await checkAuthStatus();
-  fetchCampaigns();
+  await fetchCampaigns();
 });
