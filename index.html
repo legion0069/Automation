@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitStreak AI — Automated GitHub Commits & Green Streak Engine</title>
-  <meta name="description" content="Maintain your daily GitHub green streaks with AI-generated project commits scheduled daily at 10:00 AM IST using Google Gemini.">
+  <meta name="description" content="Maintain your daily GitHub green streaks with AI-generated project commits scheduled daily at 4:00 PM IST using Google Gemini.">
   
   <!-- Modern Typography: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +41,7 @@
           <span class="live-dot"></span>
           <span class="clock-label">IST Time:</span>
           <span class="clock-time" id="liveIstTime">--:--:--</span>
-          <span class="cron-tag" title="Daily automation schedule">Scheduled 10:00 IST</span>
+          <span class="cron-tag" title="Daily automation schedule">Scheduled 16:00 IST</span>
         </div>
 
         <button class="btn btn-outline" id="btnPatGuide">
@@ -107,7 +107,7 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value" id="statNextRun">10:00 IST</span>
+              <span class="stat-value" id="statNextRun">16:00 IST</span>
               <span class="stat-label">Daily Cron Schedule</span>
             </div>
           </div>
@@ -129,11 +129,11 @@
             <div class="fire-badge" id="bannerStreakBadge">🔥 3-Day Green Streak Active</div>
             <h2 id="bannerTitle">To-Do List Autonomous Project</h2>
             <p id="bannerDesc">
-              Target Repository: <a href="https://github.com/legion0069/to-do-list" target="_blank" rel="noopener" style="color: #38bdf8; text-decoration: underline;">legion0069/to-do-list</a>. Every day at <strong>10:00 AM IST</strong>, the GitHub Actions runner automatically executes the day's development milestone, generating clean production code, automated test suites, and pushing semantic git commits.
+              Target Repository: <a href="https://github.com/legion0069/to-do-list" target="_blank" rel="noopener" style="color: #38bdf8; text-decoration: underline;">legion0069/to-do-list</a>. Every day at <strong>4:00 PM IST</strong>, the GitHub Actions runner automatically executes the day's development milestone, generating clean production code, automated test suites, and pushing semantic git commits.
             </p>
             <div id="bannerStatusPill" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-subtle);">
               <span class="live-dot" style="background: #38bdf8;"></span>
-              <span id="bannerStatusText">Next: <strong>Day 4</strong> scheduled today at <strong>10:00 AM IST</strong></span>
+              <span id="bannerStatusText">Next: <strong>Day 4</strong> scheduled today at <strong>4:00 PM IST</strong></span>
             </div>
           </div>
           <div class="banner-right">
@@ -160,7 +160,7 @@
           <div class="section-header">
             <div>
               <h3>Active Project Automations</h3>
-              <p class="section-desc">Projects currently running or queued for daily 10:00 AM IST builds.</p>
+              <p class="section-desc">Projects currently running or queued for daily 4:00 PM IST builds.</p>
             </div>
             <button class="btn btn-secondary btn-sm" id="btnRefreshList">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
@@ -287,8 +287,8 @@
 
             <div class="form-group">
               <label for="cronTime">Daily Execution Time</label>
-              <input type="time" id="cronTime" value="10:00">
-              <span class="input-hint">Default is <strong>10:00 (10:00 AM IST)</strong>.</span>
+              <input type="time" id="cronTime" value="16:00">
+              <span class="input-hint">Default is <strong>16:00 (4:00 PM IST)</strong>.</span>
             </div>
 
             <div class="form-group">
@@ -499,37 +499,37 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <h3>cron-job.org Webhook Trigger Setup</h3>
-          <p class="modal-subtitle">Wake up this service daily at 10:00 AM IST using free cloud webcron.</p>
+          <h3>cron-job.org Trigger Setup (4:00 PM IST)</h3>
+          <p class="modal-subtitle">Trigger your daily commits automatically every day at 4:00 PM IST using free cloud webcron.</p>
         </div>
         <button class="btn-close" id="btnCloseCronModal">&times;</button>
       </div>
 
       <div class="modal-body pat-guide-content">
         <p style="font-size: 0.85rem; color: var(--text-muted);">
-          If you deploy this app on free hosting (Render, Railway, etc.), you can use <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> to wake up your server and trigger commits automatically every day at 10:00 AM IST:
+          Use <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> (free tier) to trigger your daily commits automatically on the exact second every day at 4:00 PM IST:
         </p>
 
         <div class="guide-step">
           <span class="step-circle">1</span>
           <div>
-            <strong>Your Webhook URL</strong>
-            <div class="share-copy-box" style="margin-top: 6px;">
-              <input type="text" id="cronWebhookUrl" readonly>
-              <button class="btn btn-secondary btn-sm" id="btnCopyCronUrl">Copy URL</button>
-            </div>
+            <strong>Option A: Trigger GitHub Actions Directly (Zero Server Required!)</strong>
+            <p style="margin-top: 4px;">URL: <code>https://api.github.com/repos/legion0069/to-do-list/actions/workflows/daily-streak.yml/dispatches</code></p>
+            <p>Method: <strong>POST</strong></p>
+            <p>Headers: <code>Authorization: Bearer YOUR_GITHUB_TOKEN</code> &bull; <code>Accept: application/vnd.github+json</code> &bull; <code>User-Agent: cron-job-org</code></p>
+            <p>Body: <code>{"ref":"main"}</code></p>
           </div>
         </div>
 
         <div class="guide-step">
           <span class="step-circle">2</span>
           <div>
-            <strong>Create a Job on cron-job.org</strong>
-            <p>1. Go to <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> (free account).</p>
-            <p>2. Click <strong>"CREATE CRONJOB"</strong>.</p>
-            <p>3. Title: <code>GitStreak Daily 10AM IST</code></p>
-            <p>4. URL: Paste the Webhook URL above.</p>
-            <p style="color: #fbbf24; font-size: 0.8rem; margin-top: 4px;">⚠️ <strong>Note:</strong> Ensure the URL ends with <code>/api/cron/trigger</code>. Do not paste the base website URL alone (or cron-job.org will fail with <em>"output too large"</em>).</p>
+            <strong>Option B: Trigger Webhook Endpoint (If Server Deployed)</strong>
+            <div class="share-copy-box" style="margin-top: 6px;">
+              <input type="text" id="cronWebhookUrl" readonly>
+              <button class="btn btn-secondary btn-sm" id="btnCopyCronUrl">Copy URL</button>
+            </div>
+            <p style="color: #fbbf24; font-size: 0.8rem; margin-top: 4px;">⚠️ <strong>Note:</strong> Ensure the URL ends with <code>/api/cron/trigger</code>.</p>
           </div>
         </div>
 
@@ -537,7 +537,10 @@
           <span class="step-circle">3</span>
           <div>
             <strong>Set Schedule & Timezone</strong>
-            <p>Schedule: <strong>Daily at 10:00 (10:00 AM)</strong></p>
+            <p>Schedule: <strong>Daily at 16:00 (4:00 PM)</strong></p>
+            <p>Timezone: <strong>Asia/Kolkata (IST)</strong></p>
+          </div>
+        </div>
             <p>Timezone: <strong>Asia/Kolkata (IST)</strong></p>
             <p>HTTP Method: <strong>GET</strong> (or <strong>POST</strong>)</p>
           </div>
@@ -678,7 +681,7 @@
       <div class="modal-header">
         <div>
           <h3>Serverless GitHub Actions Setup</h3>
-          <p class="modal-subtitle">Runs daily at 10:00 AM IST directly on GitHub's cloud — 100% free with zero servers.</p>
+          <p class="modal-subtitle">Runs daily at 4:00 PM IST directly on GitHub's cloud — 100% free with zero servers.</p>
         </div>
         <button class="btn-close" id="btnCloseActionsGuideModal">&times;</button>
       </div>
@@ -689,7 +692,7 @@
           <div>
             <strong>Workflow File in Target Repository</strong>
             <p>Ensure your target repository contains <code>.github/workflows/daily-streak.yml</code> with the daily schedule:</p>
-            <code>schedule:<br>&nbsp;&nbsp;- cron: '30 4 * * *' &nbsp;# 10:00 AM IST</code>
+            <code>schedule:<br>&nbsp;&nbsp;- cron: '30 10 * * *' &nbsp;# 4:00 PM IST (16:00 IST / 10:30 UTC)</code>
           </div>
         </div>
 

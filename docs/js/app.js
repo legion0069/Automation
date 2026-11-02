@@ -108,7 +108,7 @@ const DEFAULT_CAMPAIGN = {
   branch: 'main',
   projectName: 'To-Do List Autonomous Project',
   projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
-  cronTime: '10:00',
+  cronTime: '16:00',
   timezone: 'Asia/Kolkata',
   totalDays: 30,
   currentDay: 4,
@@ -196,7 +196,7 @@ function renderRoadmapStreakHeatmap(campaign) {
       }
     } else if (isToday) {
       cell.className = 'heatmap-cell lv-today';
-      statusText = '🚀 Scheduled for Today (10:00 AM IST)';
+      statusText = '🚀 Scheduled for Today (4:00 PM IST)';
     } else {
       cell.className = 'heatmap-cell lv-0';
       statusText = '⏳ Upcoming Milestone';
@@ -229,7 +229,7 @@ function renderRoadmapStreakHeatmap(campaign) {
   if (heatmapSelectedDayDetail && todayMilestone) {
     heatmapSelectedDayDetail.innerHTML = `
       <strong style="color: #38bdf8;">Day ${currentDay}: ${escapeHtml(todayMilestone.title || todayMilestone)}</strong>
-      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '✅ Completed Today' : '🚀 Scheduled for Today at 10:00 AM IST'}]</span>
+      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '✅ Completed Today' : '🚀 Scheduled for Today at 4:00 PM IST'}]</span>
       <div style="margin-top: 4px; opacity: 0.75;">${escapeHtml(todayMilestone.description || 'Target feature milestone for autonomous build.')}</div>
     `;
   }
@@ -409,7 +409,7 @@ function updateStats() {
   if (statCurrentProgress) statCurrentProgress.textContent = `Day ${currentDay} / ${totalDays}`;
 
   if (statNextRun) {
-    statNextRun.textContent = primaryCampaign.hasRunToday ? 'Completed Today' : '10:00 IST (Today)';
+    statNextRun.textContent = primaryCampaign.hasRunToday ? 'Completed Today' : '16:00 IST (Today)';
   }
 
   // Update dynamic hero banner
@@ -422,9 +422,9 @@ function updateStats() {
   }
   if (bannerStatusText) {
     if (primaryCampaign.hasRunToday) {
-      bannerStatusText.innerHTML = `✅ <strong>Day ${currentDay - 1}</strong> completed today! Next: <strong>Day ${currentDay}</strong> tomorrow at 10:00 AM IST`;
+      bannerStatusText.innerHTML = `✅ <strong>Day ${currentDay - 1}</strong> completed today! Next: <strong>Day ${currentDay}</strong> tomorrow at 4:00 PM IST`;
     } else {
-      bannerStatusText.innerHTML = `Next: <strong>Day ${currentDay}</strong> scheduled today at <strong>10:00 AM IST</strong>`;
+      bannerStatusText.innerHTML = `Next: <strong>Day ${currentDay}</strong> scheduled today at <strong>4:00 PM IST</strong>`;
     }
   }
 }
@@ -503,14 +503,14 @@ function renderCampaigns() {
         <div class="card-meta-chips">
           <span class="meta-chip">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            ${c.cronTime || '10:00'} IST
+            ${c.cronTime || '16:00'} IST
           </span>
           <span class="meta-chip">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
             ${c.commitsPerDay || 2} commits/day
           </span>
           <span class="meta-chip ${isTodayDone ? 'today-done' : ''}">
-            ${isTodayDone ? '✅ Today Completed' : `⏳ Scheduled ${c.cronTime || '10:00'} IST`}
+            ${isTodayDone ? '✅ Today Completed' : `⏳ Scheduled ${c.cronTime || '16:00'} IST`}
           </span>
           <span class="meta-chip">
             📦 ${commitsCount} Commits Synced
@@ -744,8 +744,8 @@ async function refreshLogs() {
       `[GitStreak Engine] Repository: https://github.com/${c.repoOwner}/${c.repoName}`,
       `[GitStreak Engine] Branch: ${c.branch || 'main'}`,
       `[GitStreak Engine] Progress: Day ${c.currentDay || 4} of ${c.totalDays || 30}`,
-      `[GitStreak Engine] Daily Schedule: ${c.cronTime || '10:00'} IST (${c.timezone || 'Asia/Kolkata'})`,
-      `[GitStreak Engine] Today's Status: ${c.hasRunToday ? '✅ Completed Today' : '⏳ Ready for Today\'s Run (10:00 AM IST)'}`,
+      `[GitStreak Engine] Daily Schedule: ${c.cronTime || '16:00'} IST (${c.timezone || 'Asia/Kolkata'})`,
+      `[GitStreak Engine] Today's Status: ${c.hasRunToday ? '✅ Completed Today' : '⏳ Ready for Today\'s Run (4:00 PM IST)'}`,
       `[GitStreak Engine] Total Commits Synced: ${commits.length}`,
       c.latestRun ? `[GitHub Actions] Latest Action: ${c.latestRun.name} [${c.latestRun.conclusion || c.latestRun.status}]` : '',
       c.latestRun ? `[GitHub Actions] Run URL: ${c.latestRun.htmlUrl}` : '',
@@ -1000,7 +1000,7 @@ newCampaignForm.addEventListener('submit', async (e) => {
   const branch = branchNameInput.value.trim() || 'main';
   const totalDays = Number(totalDaysSelect.value) || 30;
   const commitsPerDay = Number(commitsPerDaySelect.value) || 2;
-  const cronTime = cronTimeInput.value || '10:00';
+  const cronTime = cronTimeInput.value || '16:00';
   const timezone = timezoneSelect.value || 'Asia/Kolkata';
 
   if (githubTokenInput.value.trim()) {

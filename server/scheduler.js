@@ -55,7 +55,7 @@ function getCurrentTimeInTimezone(timezone = 'Asia/Kolkata') {
       minute: '2-digit',
       hour12: false
     }).format(new Date());
-    return parts; // e.g. "10:00"
+    return parts; // e.g. "16:00"
   } catch {
     return '00:00';
   }
@@ -65,7 +65,7 @@ function getCurrentTimeInTimezone(timezone = 'Asia/Kolkata') {
  * Checks whether a campaign is due right now:
  * 1. Campaign is active
  * 2. Has NOT already succeeded today in its timezone
- * 3. Has reached or passed the scheduled time (>= scheduledTime, e.g. 10:00)
+ * 3. Has reached or passed the scheduled time (>= scheduledTime, e.g. 16:00)
  */
 function isCampaignDue(campaign) {
   if (!campaign || campaign.status !== 'active') return false;
@@ -75,10 +75,10 @@ function isCampaignDue(campaign) {
     return false; // Already finished today's streak
   }
 
-  const scheduledTime = campaign.cronTime || '10:00';
+  const scheduledTime = campaign.cronTime || '16:00';
   const currentTime = getCurrentTimeInTimezone(tz);
 
-  // e.g. "10:00" >= "10:00", or "11:30" >= "10:00" (catch-up if server was asleep at 10:00)
+  // e.g. "16:00" >= "16:00", or "16:30" >= "16:00" (catch-up if server was asleep at 16:00)
   return currentTime >= scheduledTime;
 }
 
@@ -95,7 +95,7 @@ async function processDueCampaigns() {
 
     for (const campaign of activeCampaigns) {
       const tz = campaign.timezone || 'Asia/Kolkata';
-      const scheduledTime = campaign.cronTime || '10:00';
+      const scheduledTime = campaign.cronTime || '16:00';
       const currentTime = getCurrentTimeInTimezone(tz);
 
       if (isCampaignDue(campaign)) {
@@ -117,19 +117,19 @@ async function processDueCampaigns() {
 
 /**
  * Starts the background cron scheduler.
- * - Dedicated 10:00 AM IST daily trigger
+ * - Dedicated 4:00 PM IST daily trigger
  * - Minutely heartbeat for catch-up execution & custom times
  * - Immediate startup catch-up execution
  */
 function startScheduler() {
   console.log('[Scheduler] Initializing GitStreak Cron Scheduler...');
-  console.log('[Scheduler] Default schedule: Daily at 10:00 (10:00 AM) IST [Asia/Kolkata]');
+  console.log('[Scheduler] Default schedule: Daily at 16:00 (4:00 PM) IST [Asia/Kolkata]');
 
-  // Dedicated 10:00 AM IST trigger: "0 10 * * *" in Asia/Kolkata
+  // Dedicated 4:00 PM IST trigger: "0 16 * * *" in Asia/Kolkata
   cron.schedule(
-    '0 10 * * *',
+    '0 16 * * *',
     async () => {
-      console.log('[Scheduler] ⏰ 10:00 AM IST Reached! Running active daily campaigns...');
+      console.log('[Scheduler] ⏰ 4:00 PM IST Reached! Running active daily campaigns...');
       await processDueCampaigns();
     },
     {
@@ -137,7 +137,7 @@ function startScheduler() {
     }
   );
 
-  // Minutely heartbeat checker (runs catch-up if server was asleep at 10:00 on Render free tier)
+  // Minutely heartbeat checker (runs catch-up if server was asleep at 16:00 on Render free tier)
   cron.schedule('* * * * *', async () => {
     await processDueCampaigns();
   });
