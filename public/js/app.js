@@ -69,35 +69,15 @@ const btnAutoPlan = document.getElementById('btnAutoPlan');
 // Real 30-Day Development Roadmap for the Target Project
 const DEFAULT_ROADMAP = [
   { day: 1, title: "Project setup, directory scaffolding & environment config", description: "Initialize repository structure, scripts/streak-runner, package metadata, and workflows." },
-  { day: 2, title: "Project goal, core data models & task schema definitions", description: "Design task entities, status enums, priority flags, and TypeScript/JS schemas." },
+  { day: 2, title: "Project goal, core data models & task schema definitions", description: "Design task entities, status enums, priority flags, and schema definitions." },
   { day: 3, title: "Task CRUD operations (Create, Read, Update, Delete) & memory store", description: "Implement in-memory storage manager with create, read, update, and remove methods." },
   { day: 4, title: "Task prioritization (Low, Medium, High) & category tagging system", description: "Tagging pipeline, priority weight calculators, and category taxonomy." },
-  { day: 5, title: "Due dates, reminder timers & urgency sorting algorithm", description: "Calculate overdue items, countdown days, and sort by urgency index." },
-  { day: 6, title: "REST API controller endpoints for task state management", description: "HTTP route handlers for task querying, state transitions, and JSON schemas." },
-  { day: 7, title: "Task filtering system (active, completed, overdue, by priority)", description: "Multi-condition query engine for filtering tasks across status and tags." },
-  { day: 8, title: "Responsive frontend layout, header & task card grid UI", description: "Interactive web view, task counters, header stats, and grid layout." },
-  { day: 9, title: "Interactive task status toggling, animations & progress bar", description: "Smooth state toggles, completion celebrations, and milestone progress tracker." },
-  { day: 10, title: "Keyword search with live filtering & tag auto-complete", description: "Debounced search index, fuzzy keyword matching, and tag query pills." },
-  { day: 11, title: "Bulk operations: select all, mark completed & clear finished", description: "Multi-select actions, bulk state transitions, and batch deletions." },
-  { day: 12, title: "Local persistence adapter & localStorage synchronization", description: "Client offline storage synchronization and cache hydration." },
-  { day: 13, title: "Export & import system: backup tasks to JSON and CSV", description: "Data serialization, import validation schemas, and portable file exports." },
-  { day: 14, title: "Keyboard shortcuts (quick add, toggle, delete) for productivity", description: "Hotkeys listener for command palette, quick navigation, and rapid task input." },
-  { day: 15, title: "Automated unit testing suite & boundary validation", description: "Unit test cases for CRUD integrity, edge cases, and schema errors." },
-  { day: 16, title: "Dark mode glassmorphism UI theme & accessibility styling", description: "Modern dark aesthetic, high contrast ratios, and accessible ARIA attributes." },
-  { day: 17, title: "Notifications manager: browser alerts for upcoming due dates", description: "Event emitters and notification triggers for near-deadline items." },
-  { day: 18, title: "Subtasks & checklist decomposition for complex todos", description: "Nested items, recursive completion calculations, and checklist progress." },
-  { day: 19, title: "Performance profiling, bundle size optimization & cleanup", description: "Refactor utility methods, reduce memory overhead, and optimize render loops." },
-  { day: 20, title: "Comprehensive documentation, user manual & release packaging", description: "Architecture diagrams, README documentation, and developer setup guide." },
-  { day: 21, title: "Multi-list support & project workspaces", description: "Partition tasks into multiple workspaces, projects, and custom list boards." },
-  { day: 22, title: "Activity audit log & revision history tracking", description: "Immutable timeline log of all task edits, completions, and deletions." },
-  { day: 23, title: "Data visualization & productivity velocity metrics", description: "Weekly velocity charts, completion streaks, and analytics summary." },
-  { day: 24, title: "Drag-and-drop task reordering and kanban view", description: "Board view layout with draggable cards and status lanes." },
-  { day: 25, title: "Custom themes & user personalization engine", description: "Accent colors, layout densities, and saved user preferences." },
-  { day: 26, title: "Webhook notifications & external integration", description: "Webhook event dispatchers for task completion and daily streak alerts." },
-  { day: 27, title: "Offline-first PWA caching and service worker", description: "Service worker registration, asset caching, and offline status indicator." },
-  { day: 28, title: "End-to-end integration and load testing", description: "Full scenario test covering task lifecycle, storage quotas, and stress limits." },
-  { day: 29, title: "Production build optimization & Docker packaging", description: "Production bundling, container definition, and deploy configurations." },
-  { day: 30, title: "Final release v1.0.0, CHANGELOG & milestone showcase", description: "Version tagging, release notes compilation, and project completion celebration." }
+  { day: 5, title: "Due dates, countdown timers & urgency sorting algorithm", description: "Calculate overdue items, countdown timers, and sort by dynamic urgency index." },
+  { day: 6, title: "REST API controller endpoints, HTTP routing & request validation", description: "HTTP route handlers for task querying, state transitions, and request validation." },
+  { day: 7, title: "Multi-query filtering engine (search, tags, priority, date range)", description: "Multi-condition query engine for filtering tasks across status, tags, and date ranges." },
+  { day: 8, title: "Interactive web frontend UI (task dashboard, card grid, status toggles)", description: "Interactive task dashboard, task counter badges, card grid layout, and state toggles." },
+  { day: 9, title: "Local persistence adapter, JSON/CSV export/import & dark mode", description: "Local storage persistence adapter, portable data export/import, and UI theme styling." },
+  { day: 10, title: "End-to-end integration test suite, production packaging & v1.0.0 release", description: "Full scenario test suite, production bundling, and final v1.0.0 release packaging." }
 ];
 
 // Active Target Project (Preloaded with real repo)
@@ -110,13 +90,13 @@ const DEFAULT_CAMPAIGN = {
   projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
   cronTime: '16:00',
   timezone: 'Asia/Kolkata',
-  totalDays: 30,
-  currentDay: 4,
-  commitsPerDay: 2,
+  totalDays: 10,
+  currentDay: 6,
+  commitsPerDay: 4,
   status: 'active',
-  totalCommitsPushed: 16,
-  hasRunToday: false,
-  lastRunDate: '2026-11-01',
+  totalCommitsPushed: 20,
+  hasRunToday: true,
+  lastRunDate: '2026-11-02',
   commitsHistory: [],
   history: [],
   plan: DEFAULT_ROADMAP
@@ -182,8 +162,8 @@ function renderRoadmapStreakHeatmap(campaign) {
     const milestoneDesc = typeof milestone === 'string' ? '' : (milestone.description || '');
 
     // Check completion status
-    const isCompleted = dayNum < currentDay || (dayNum === currentDay && c.hasRunToday);
-    const isToday = (dayNum === currentDay && !c.hasRunToday);
+    const isCompleted = dayNum < currentDay;
+    const isToday = (dayNum === currentDay);
 
     let statusText = '';
     if (isCompleted) {
@@ -196,7 +176,7 @@ function renderRoadmapStreakHeatmap(campaign) {
       }
     } else if (isToday) {
       cell.className = 'heatmap-cell lv-today';
-      statusText = '🚀 Scheduled for Today (4:00 PM IST)';
+      statusText = c.hasRunToday ? '🚀 Next: Scheduled Tomorrow (4:00 PM IST)' : '🚀 Scheduled for Today (4:00 PM IST)';
     } else {
       cell.className = 'heatmap-cell lv-0';
       statusText = '⏳ Upcoming Milestone';
@@ -229,7 +209,7 @@ function renderRoadmapStreakHeatmap(campaign) {
   if (heatmapSelectedDayDetail && todayMilestone) {
     heatmapSelectedDayDetail.innerHTML = `
       <strong style="color: #38bdf8;">Day ${currentDay}: ${escapeHtml(todayMilestone.title || todayMilestone)}</strong>
-      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '✅ Completed Today' : '🚀 Scheduled for Today at 4:00 PM IST'}]</span>
+      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '🚀 Next: Scheduled Tomorrow at 4:00 PM IST' : '🚀 Scheduled for Today at 4:00 PM IST'}]</span>
       <div style="margin-top: 4px; opacity: 0.75;">${escapeHtml(todayMilestone.description || 'Target feature milestone for autonomous build.')}</div>
     `;
   }

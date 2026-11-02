@@ -1,30 +1,50 @@
 {
   "projectName": "to-do-list",
-  "totalDays": 30,
-  "currentDay": 5,
+  "totalDays": 10,
+  "currentDay": 6,
   "lastRunDate": "2026-11-02",
+  "roadmap": [
+    "Project setup, directory scaffolding, and environment config",
+    "Project goal, core data models, and schema definitions",
+    "Task CRUD operations (Create, Read, Update, Delete) and memory store",
+    "Task prioritization (Low, Medium, High) and category tagging system",
+    "Due dates, countdown timers, and urgency sorting algorithm",
+    "REST API controller endpoints, HTTP routing, and request validation",
+    "Multi-query filtering engine (search, tags, priority, date range)",
+    "Interactive web frontend UI (task dashboard, card grid, status toggles)",
+    "Local persistence adapter, JSON/CSV export/import, and dark mode",
+    "End-to-end integration test suite, production packaging, and v1.0.0 release"
+  ],
   "history": [
     {
       "day": 1,
-      "milestone": "Project setup & directory scaffolding",
-      "date": "2026-10-31"
+      "milestone": "Project setup, directory scaffolding, and environment config",
+      "date": "2026-10-31",
+      "commitsCount": 2
     },
     {
       "day": 2,
-      "milestone": "Project goal & schema definitions",
-      "date": "2026-10-31"
+      "milestone": "Project goal, core data models, and schema definitions",
+      "date": "2026-10-31",
+      "commitsCount": 2
     },
     {
       "day": 3,
       "milestone": "Task CRUD operations (Create, Read, Update, Delete) and memory store",
       "date": "2026-11-01",
-      "commitsCount": 2
+      "commitsCount": 4
     },
     {
       "day": 4,
       "milestone": "Task prioritization (Low, Medium, High) and category tagging system",
       "date": "2026-11-02",
-      "commitsCount": 2
+      "commitsCount": 4
+    },
+    {
+      "day": 5,
+      "milestone": "Due dates, countdown timers, and urgency sorting algorithm",
+      "date": "2026-11-02",
+      "commitsCount": 4
     }
   ]
 }
