@@ -1,19 +1,29 @@
 {
-  "projectName": "github-streaks",
+  "projectName": "to-do-list",
   "totalDays": 30,
-  "currentDay": 3,
-  "lastRunDate": "2026-11-01",
+  "currentDay": 5,
+  "lastRunDate": "2026-11-02",
   "history": [
     {
       "day": 1,
-      "milestone": "Project setup, directory scaffolding, and environment config",
-      "date": "2026-10-31",
-      "commitsCount": 2
+      "milestone": "Project setup & directory scaffolding",
+      "date": "2026-10-31"
     },
     {
       "day": 2,
-      "milestone": "Data models, schema definitions, and validation helpers",
+      "milestone": "Project goal & schema definitions",
+      "date": "2026-10-31"
+    },
+    {
+      "day": 3,
+      "milestone": "Task CRUD operations (Create, Read, Update, Delete) and memory store",
       "date": "2026-11-01",
+      "commitsCount": 2
+    },
+    {
+      "day": 4,
+      "milestone": "Task prioritization (Low, Medium, High) and category tagging system",
+      "date": "2026-11-02",
       "commitsCount": 2
     }
   ]
