@@ -1,8 +1,8 @@
 {
   "projectName": "to-do-list",
   "totalDays": 10,
-  "currentDay": 6,
-  "lastRunDate": "2026-11-02",
+  "currentDay": 7,
+  "lastRunDate": "2026-11-03",
   "roadmap": [
     "Project setup, directory scaffolding, and environment config",
     "Project goal, core data models, and schema definitions",
@@ -44,6 +44,12 @@
       "day": 5,
       "milestone": "Due dates, countdown timers, and urgency sorting algorithm",
       "date": "2026-11-02",
+      "commitsCount": 4
+    },
+    {
+      "day": 6,
+      "milestone": "REST API controller endpoints, HTTP routing, and request validation",
+      "date": "2026-11-03",
       "commitsCount": 4
     }
   ]
