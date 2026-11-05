@@ -1490,3 +1490,9 @@ textarea {
   color: var(--text-dim);
   border-top: 1px solid var(--border-subtle);
 }
+
+/* Selected Campaign Card Highlight */
+.campaign-card.active-campaign-card {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25) !important;
+}

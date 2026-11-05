@@ -67,6 +67,41 @@ const geminiVerifyStatus = document.getElementById('geminiVerifyStatus');
 const btnAutoPlan = document.getElementById('btnAutoPlan');
 
 // Real 30-Day Development Roadmap for the Target Project
+// Personal Finance AI 10-Day Development Roadmap
+const FINANCE_ROADMAP = [
+  { day: 1, title: "Financial Data Architecture, Bank Statement Models & Transaction Schemas", description: "Core financial entities (Transaction, Account, Statement, Category), schema validation, and ISO currency/date normalization." },
+  { day: 2, title: "Bank Statement Parser & Multi-Format Ingestion Engine", description: "Ingest CSV, OFX, and statement texts, column auto-detection, debit/credit polarity mapping, and duplicate transaction deduplication." },
+  { day: 3, title: "AI Spending Analysis & Merchant Categorization Engine", description: "Merchant name normalization, automatic categorization (groceries, utilities, dining, subscription), recurring charge detector, and spending anomaly alerts." },
+  { day: 4, title: "Intelligent Budgeting System & 50/30/20 Rule Allocator", description: "Dynamic budget envelope manager, 50/30/20 needs-wants-savings calculator, velocity & burn-rate tracker, and overspending warning alerts." },
+  { day: 5, title: "Financial Cash Flow Forecaster & Runway Predictor", description: "Monte Carlo and moving-average balance projections, recurring bill runway estimation, upcoming deficit alerts, and end-of-month cash surplus forecasts." },
+  { day: 6, title: "Smart Investment Suggestions & Savings Rate Optimizer", description: "Savings rate optimization algorithm, emergency fund requirement calculator, risk tolerance profiling, and diversified asset allocation recommendations." },
+  { day: 7, title: "Automated Monthly Financial Reports Generator", description: "Executive financial summary builder, net cash flow calculation, savings rate benchmark, month-over-month category delta analysis, and exportable report markdown/JSON." },
+  { day: 8, title: "\"Chat with Your Expenses\" Natural Language Query Agent", description: "Semantic search engine over transactions, conversational query processor (spending Q&A, historical comparisons), and expense insights generator." },
+  { day: 9, title: "Interactive Personal Finance Web Dashboard & Analytics UI", description: "Responsive web interface, statement drag-and-drop upload zone, interactive spending charts, budget progress gauges, and real-time chat interface." },
+  { day: 10, title: "End-to-End System Integration, Security Audit & v1.0.0 Release Packaging", description: "Comprehensive end-to-end integration test suite, REST API endpoints, transaction export/import (CSV/JSON), and production v1.0.0 release packaging." }
+];
+
+const FINANCE_CAMPAIGN = {
+  id: 'legion0069-personal-finance-ai',
+  repoOwner: 'legion0069',
+  repoName: 'Personal-Finance-AI',
+  branch: 'main',
+  projectName: 'Personal Finance AI',
+  projectDescription: 'Autonomous AI Personal Finance OS: bank statement parser, spending analysis, dynamic budget, cash flow forecast, investment suggestions, monthly reports, and expense chat.',
+  cronTime: '16:00',
+  timezone: 'Asia/Kolkata',
+  totalDays: 10,
+  currentDay: 1,
+  commitsPerDay: 6,
+  status: 'active',
+  totalCommitsPushed: 2,
+  hasRunToday: false,
+  lastRunDate: null,
+  commitsHistory: [],
+  history: [],
+  plan: FINANCE_ROADMAP
+};
+
 const DEFAULT_ROADMAP = [
   { day: 1, title: "Project setup, directory scaffolding & environment config", description: "Initialize repository structure, scripts/streak-runner, package metadata, and workflows." },
   { day: 2, title: "Project goal, core data models & task schema definitions", description: "Design task entities, status enums, priority flags, and schema definitions." },
@@ -141,6 +176,19 @@ function startLiveClock() {
 }
 
 // ----------------- REAL 30-DAY ROADMAP HEATMAP -----------------
+
+function selectActiveCampaign(campaignId) {
+  const c = campaigns.find(item => item.id === campaignId);
+  if (!c) return;
+  activeViewingCampaign = c;
+  renderRoadmapStreakHeatmap(c);
+  const titleBadge = document.querySelector('.heatmap-title');
+  if (titleBadge) {
+    titleBadge.textContent = `${c.projectName} — ${c.totalDays || 10}-Day Roadmap`;
+  }
+  renderCampaigns();
+}
+
 function renderRoadmapStreakHeatmap(campaign) {
   if (!heatmapGrid) return;
   heatmapGrid.innerHTML = '';
@@ -243,12 +291,21 @@ function loadCampaignsFromStorage() {
     const raw = localStorage.getItem('gitstreak_campaigns');
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Ensure both default projects exist
+        if (!parsed.some(c => c.id === 'legion0069-personal-finance-ai' || c.repoName === 'Personal-Finance-AI')) {
+          parsed.unshift(FINANCE_CAMPAIGN);
+        }
+        if (!parsed.some(c => c.id === 'legion0069-to-do-list' || c.repoName === 'to-do-list')) {
+          parsed.push(DEFAULT_CAMPAIGN);
+        }
+        return parsed;
+      }
     }
   } catch (err) {
     console.error('Failed to parse saved campaigns:', err);
   }
-  return [DEFAULT_CAMPAIGN];
+  return [FINANCE_CAMPAIGN, DEFAULT_CAMPAIGN];
 }
 
 function saveCampaignsToStorage(campaignList) {
@@ -447,11 +504,12 @@ function renderCampaigns() {
     const commitsCount = (c.commitsHistory || []).length || c.totalCommitsPushed || 0;
     const latestRun = c.latestRun;
 
+    const isViewing = (activeViewingCampaign && activeViewingCampaign.id === c.id) || (!activeViewingCampaign && c.id === campaigns[0]?.id);
     return `
-      <div class="campaign-card" data-id="${c.id}">
+      <div class="campaign-card ${isViewing ? 'active-campaign-card' : ''}" onclick="selectActiveCampaign('${c.id}')" style="cursor: pointer;" data-id="${c.id}">
         <div class="card-top">
           <div class="card-project-info">
-            <h4>${escapeHtml(c.projectName)}</h4>
+            <h4>${escapeHtml(c.projectName)} <span style="font-size: 11px; font-weight: normal; opacity: 0.7; margin-left: 6px;">(Click to view roadmap)</span></h4>
             <a href="https://github.com/${c.repoOwner}/${c.repoName}" target="_blank" rel="noopener" class="repo-link">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
               ${c.repoOwner}/${c.repoName} [${c.branch || 'main'}]
