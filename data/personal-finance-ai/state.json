@@ -1,0 +1,67 @@
+{
+  "projectName": "Personal-Finance-AI",
+  "totalDays": 10,
+  "currentDay": 2,
+  "commitsPerDay": 6,
+  "lastRunDate": "2026-11-05",
+  "roadmap": [
+    {
+      "day": 1,
+      "title": "Financial Data Architecture, Bank Statement Models & Transaction Schemas",
+      "description": "Core financial entities (Transaction, Account, Statement, Category), schema validation, and ISO currency/date normalization."
+    },
+    {
+      "day": 2,
+      "title": "Bank Statement Parser & Multi-Format Ingestion Engine",
+      "description": "Ingest CSV, OFX, and statement texts, column auto-detection, debit/credit polarity mapping, and duplicate transaction deduplication."
+    },
+    {
+      "day": 3,
+      "title": "AI Spending Analysis & Merchant Categorization Engine",
+      "description": "Merchant name normalization, automatic categorization (groceries, utilities, dining, subscription), recurring charge detector, and spending anomaly alerts."
+    },
+    {
+      "day": 4,
+      "title": "Intelligent Budgeting System & 50/30/20 Rule Allocator",
+      "description": "Dynamic budget envelope manager, 50/30/20 needs-wants-savings calculator, velocity & burn-rate tracker, and overspending warning alerts."
+    },
+    {
+      "day": 5,
+      "title": "Financial Cash Flow Forecaster & Runway Predictor",
+      "description": "Monte Carlo and moving-average balance projections, recurring bill runway estimation, upcoming deficit alerts, and end-of-month cash surplus forecasts."
+    },
+    {
+      "day": 6,
+      "title": "Smart Investment Suggestions & Savings Rate Optimizer",
+      "description": "Savings rate optimization algorithm, emergency fund requirement calculator, risk tolerance profiling, and diversified asset allocation recommendations."
+    },
+    {
+      "day": 7,
+      "title": "Automated Monthly Financial Reports Generator",
+      "description": "Executive financial summary builder, net cash flow calculation, savings rate benchmark, month-over-month category delta analysis, and exportable report markdown/JSON."
+    },
+    {
+      "day": 8,
+      "title": "\"Chat with Your Expenses\" Natural Language Query Agent",
+      "description": "Semantic search engine over transactions, conversational query processor (spending Q&A, historical comparisons), and expense insights generator."
+    },
+    {
+      "day": 9,
+      "title": "Interactive Personal Finance Web Dashboard & Analytics UI",
+      "description": "Responsive web interface, statement drag-and-drop upload zone, interactive spending charts, budget progress gauges, and real-time chat interface."
+    },
+    {
+      "day": 10,
+      "title": "End-to-End System Integration, Security Audit & v1.0.0 Release Packaging",
+      "description": "Comprehensive end-to-end integration test suite, REST API endpoints, transaction export/import (CSV/JSON), and production v1.0.0 release packaging."
+    }
+  ],
+  "history": [
+    {
+      "day": 1,
+      "milestone": "Financial Data Architecture, Bank Statement Models & Transaction Schemas",
+      "date": "2026-11-05",
+      "commitsCount": 6
+    }
+  ]
+}

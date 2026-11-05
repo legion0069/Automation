@@ -88,7 +88,7 @@ const FINANCE_CAMPAIGN = {
   branch: 'main',
   projectName: 'Personal Finance AI',
   projectDescription: 'Autonomous AI Personal Finance OS: bank statement parser, spending analysis, dynamic budget, cash flow forecast, investment suggestions, monthly reports, and expense chat.',
-  cronTime: '16:00',
+  cronTime: '10:00',
   timezone: 'Asia/Kolkata',
   totalDays: 10,
   currentDay: 1,
@@ -123,7 +123,7 @@ const DEFAULT_CAMPAIGN = {
   branch: 'main',
   projectName: 'To-Do List Autonomous Project',
   projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
-  cronTime: '16:00',
+  cronTime: '09:55',
   timezone: 'Asia/Kolkata',
   totalDays: 10,
   currentDay: 6,
@@ -224,7 +224,7 @@ function renderRoadmapStreakHeatmap(campaign) {
       }
     } else if (isToday) {
       cell.className = 'heatmap-cell lv-today';
-      statusText = c.hasRunToday ? '🚀 Next: Scheduled Tomorrow (4:00 PM IST)' : '🚀 Scheduled for Today (4:00 PM IST)';
+      statusText = c.hasRunToday ? `🚀 Next: Scheduled Tomorrow (${c.cronTime || '10:00'} IST)` : `🚀 Scheduled for Today (${c.cronTime || '10:00'} IST)`;
     } else {
       cell.className = 'heatmap-cell lv-0';
       statusText = '⏳ Upcoming Milestone';
@@ -257,7 +257,7 @@ function renderRoadmapStreakHeatmap(campaign) {
   if (heatmapSelectedDayDetail && todayMilestone) {
     heatmapSelectedDayDetail.innerHTML = `
       <strong style="color: #38bdf8;">Day ${currentDay}: ${escapeHtml(todayMilestone.title || todayMilestone)}</strong>
-      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? '🚀 Next: Scheduled Tomorrow at 4:00 PM IST' : '🚀 Scheduled for Today at 4:00 PM IST'}]</span>
+      <span style="margin-left: 8px; opacity: 0.8;">[${c.hasRunToday ? `🚀 Next: Scheduled Tomorrow at ${c.cronTime || '10:00'} IST` : `🚀 Scheduled for Today at ${c.cronTime || '10:00'} IST`}]</span>
       <div style="margin-top: 4px; opacity: 0.75;">${escapeHtml(todayMilestone.description || 'Target feature milestone for autonomous build.')}</div>
     `;
   }
@@ -292,7 +292,15 @@ function loadCampaignsFromStorage() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Ensure both default projects exist
+        // Enforce latest schedules
+        parsed.forEach(c => {
+          if (c.id === 'legion0069-personal-finance-ai' || c.repoName === 'Personal-Finance-AI') {
+            c.cronTime = '10:00';
+          }
+          if (c.id === 'legion0069-to-do-list' || c.repoName === 'to-do-list') {
+            c.cronTime = '09:55';
+          }
+        });
         if (!parsed.some(c => c.id === 'legion0069-personal-finance-ai' || c.repoName === 'Personal-Finance-AI')) {
           parsed.unshift(FINANCE_CAMPAIGN);
         }
@@ -446,7 +454,7 @@ function updateStats() {
   if (statCurrentProgress) statCurrentProgress.textContent = `Day ${currentDay} / ${totalDays}`;
 
   if (statNextRun) {
-    statNextRun.textContent = primaryCampaign.hasRunToday ? 'Completed Today' : '16:00 IST (Today)';
+    statNextRun.textContent = primaryCampaign.hasRunToday ? 'Completed Today' : `${primaryCampaign.cronTime || '10:00'} IST`;
   }
 
   // Update dynamic hero banner
@@ -459,9 +467,9 @@ function updateStats() {
   }
   if (bannerStatusText) {
     if (primaryCampaign.hasRunToday) {
-      bannerStatusText.innerHTML = `✅ <strong>Day ${currentDay - 1}</strong> completed today! Next: <strong>Day ${currentDay}</strong> tomorrow at 4:00 PM IST`;
+      bannerStatusText.innerHTML = `✅ <strong>Day ${currentDay - 1}</strong> completed today! Next: <strong>Day ${currentDay}</strong> tomorrow at ${primaryCampaign.cronTime || '10:00'} IST`;
     } else {
-      bannerStatusText.innerHTML = `Next: <strong>Day ${currentDay}</strong> scheduled today at <strong>4:00 PM IST</strong>`;
+      bannerStatusText.innerHTML = `Next: <strong>Day ${currentDay}</strong> scheduled today at <strong>${primaryCampaign.cronTime || '10:00'} IST</strong>`;
     }
   }
 }
@@ -1283,6 +1291,15 @@ function updateCronModalFields() {
   if (!cronDispatchUrl) return;
   const repo = cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI';
   cronDispatchUrl.value = getDispatchUrlForProject(repo);
+
+  const schedulePreview = document.getElementById('cronScheduleTimePreview');
+  if (schedulePreview) {
+    if (repo === 'to-do-list') {
+      schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:55 AM IST (09:55)</strong>';
+    } else {
+      schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:00 AM IST (10:00)</strong>';
+    }
+  }
 
   const token = getSavedGhToken();
   if (cronHeaderTokenPreview) {

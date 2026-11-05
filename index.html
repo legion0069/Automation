@@ -41,7 +41,7 @@
           <span class="live-dot"></span>
           <span class="clock-label">IST Time:</span>
           <span class="clock-time" id="liveIstTime">--:--:--</span>
-          <span class="cron-tag" title="Daily automation schedule">Scheduled 16:00 IST</span>
+          <span class="cron-tag" title="Daily automation schedules">To-Do: 9:55 AM | Finance AI: 10:00 AM IST</span>
         </div>
 
         <button class="btn btn-outline" id="btnPatGuide">
@@ -111,7 +111,7 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="stat-value" id="statNextRun">16:00 IST</span>
+              <span class="stat-value" id="statNextRun">09:55 / 10:00 IST</span>
               <span class="stat-label">Daily Cron Schedule</span>
             </div>
           </div>
@@ -133,7 +133,7 @@
             <div class="fire-badge" id="bannerStreakBadge">🔥 3-Day Green Streak Active</div>
             <h2 id="bannerTitle">To-Do List Autonomous Project</h2>
             <p id="bannerDesc">
-              Target Repository: <a href="https://github.com/legion0069/to-do-list" target="_blank" rel="noopener" style="color: #38bdf8; text-decoration: underline;">legion0069/to-do-list</a>. Every day at <strong>4:00 PM IST</strong>, the GitHub Actions runner automatically executes the day's development milestone, generating clean production code, automated test suites, and pushing semantic git commits.
+              Target Repository: <a href="https://github.com/legion0069/to-do-list" target="_blank" rel="noopener" style="color: #38bdf8; text-decoration: underline;">legion0069/to-do-list</a>. Every morning at <strong>9:55 AM IST</strong> (To-Do List) and <strong>10:00 AM IST</strong> (Personal Finance AI), the GitHub Actions runner automatically executes the day's development milestone, generating clean production code, automated test suites, and pushing semantic git commits.
             </p>
             <div id="bannerStatusPill" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-subtle);">
               <span class="live-dot" style="background: #38bdf8;"></span>
@@ -164,7 +164,7 @@
           <div class="section-header">
             <div>
               <h3>Active Project Automations</h3>
-              <p class="section-desc">Projects currently running or queued for daily 4:00 PM IST builds.</p>
+              <p class="section-desc">Projects currently running or queued for daily 9:55 AM / 10:00 AM IST builds.</p>
             </div>
             <button class="btn btn-secondary btn-sm" id="btnRefreshList">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
@@ -504,7 +504,7 @@
       <div class="modal-header">
         <div>
           <h3>⚡ cron-job.org Zero-Delay Scheduler</h3>
-          <p class="modal-subtitle">GitHub Actions native schedule can be delayed up to 60 minutes. Use free webcron to trigger exactly at 4:00:00 PM IST.</p>
+          <p class="modal-subtitle">GitHub Actions native schedule can be delayed up to 60 minutes. Use free webcron to trigger on the exact second at 9:55 AM / 10:00 AM IST.</p>
         </div>
         <button class="btn-close" id="btnCloseCronModal">&times;</button>
       </div>
@@ -563,7 +563,7 @@
           <div style="flex: 1;">
             <strong>Step 4: Execution Schedule on cron-job.org</strong>
             <div style="margin-top: 4px; font-size: 0.85rem; line-height: 1.6;">
-              <div>⏰ Execution Schedule: <strong>Daily at 16:00 (4:00 PM)</strong></div>
+              <div id="cronScheduleTimePreview">⏰ Execution Schedule: <strong>Daily at 10:00 AM IST (10:00)</strong></div>
               <div>🌍 Timezone: <strong>Asia/Kolkata (IST)</strong></div>
             </div>
           </div>
