@@ -115,28 +115,84 @@ const DEFAULT_ROADMAP = [
   { day: 10, title: "End-to-end integration test suite, production packaging & v1.0.0 release", description: "Full scenario test suite, production bundling, and final v1.0.0 release packaging." }
 ];
 
-// Active Target Project (Preloaded with real repo)
-const DEFAULT_CAMPAIGN = {
+// Active Target Projects (Synchronized with cron-job.org)
+
+// 1. Daily Restaurant Ratings (09:00 AM IST)
+const RESTAURANT_CAMPAIGN = {
+  id: 'legion0069-restaurant-ratings-tracker',
+  repoOwner: 'legion0069',
+  repoName: 'restaurant-ratings-tracker',
+  workflowFile: 'daily_ratings.yml',
+  branch: 'main',
+  projectName: 'Daily Restaurant Ratings',
+  projectDescription: 'Automated Python data pipeline for Google Maps restaurant ratings, Excel ledger tracking, and email reporting.',
+  cronTime: '09:00',
+  timezone: 'Asia/Kolkata',
+  totalDays: 30,
+  currentDay: 1,
+  commitsPerDay: 1,
+  status: 'active',
+  totalCommitsPushed: 36,
+  hasRunToday: true,
+  lastRunDate: '2026-11-05',
+  commitsHistory: [],
+  history: [],
+  plan: [
+    { day: 1, title: "Automated Daily Ratings Scraper", description: "Fetch live restaurant Google ratings via SerpAPI and compute delta changes." },
+    { day: 2, title: "Excel Data Pipeline & Historical Ledger", description: "Append ratings history to data/restaurant_ratings.xlsx spreadsheet." },
+    { day: 3, title: "Automated Email Notification & Delivery", description: "Dispatch daily ratings summary report via SMTP to stakeholder recipients." }
+  ]
+};
+
+// 2. To-Do List (09:55 AM IST)
+const TODO_CAMPAIGN = {
   id: 'legion0069-to-do-list',
   repoOwner: 'legion0069',
   repoName: 'to-do-list',
+  workflowFile: 'daily-streak.yml',
   branch: 'main',
   projectName: 'To-Do List Autonomous Project',
   projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
   cronTime: '09:55',
   timezone: 'Asia/Kolkata',
   totalDays: 10,
-  currentDay: 6,
+  currentDay: 9,
   commitsPerDay: 4,
   status: 'active',
-  totalCommitsPushed: 20,
+  totalCommitsPushed: 36,
   hasRunToday: true,
-  lastRunDate: '2026-11-02',
+  lastRunDate: '2026-11-05',
   commitsHistory: [],
   history: [],
   plan: DEFAULT_ROADMAP
 };
 
+// 3. Personal Finance AI (10:00 AM IST)
+const FINANCE_CAMPAIGN = {
+  id: 'legion0069-personal-finance-ai',
+  repoOwner: 'legion0069',
+  repoName: 'Personal-Finance-AI',
+  workflowFile: 'daily-streak.yml',
+  branch: 'main',
+  projectName: 'Personal Finance AI',
+  projectDescription: 'Autonomous AI Personal Finance OS: bank statement parser, spending analysis, dynamic budget, cash flow forecast, investment suggestions, monthly reports, and expense chat.',
+  cronTime: '10:00',
+  timezone: 'Asia/Kolkata',
+  totalDays: 10,
+  currentDay: 2,
+  commitsPerDay: 6,
+  status: 'active',
+  totalCommitsPushed: 8,
+  hasRunToday: true,
+  lastRunDate: '2026-11-05',
+  commitsHistory: [],
+  history: [],
+  plan: FINANCE_ROADMAP
+};
+
+const DEFAULT_CAMPAIGNS = [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN];
+
+const DEFAULT_CAMPAIGN = RESTAURANT_CAMPAIGN;
 // ----------------- TOAST NOTIFICATIONS -----------------
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
@@ -292,28 +348,41 @@ function loadCampaignsFromStorage() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Enforce latest schedules
-        parsed.forEach(c => {
-          if (c.id === 'legion0069-personal-finance-ai' || c.repoName === 'Personal-Finance-AI') {
-            c.cronTime = '10:00';
+        // Enforce the exact 3 cron-job.org projects
+        const validRepos = ['restaurant-ratings-tracker', 'to-do-list', 'Personal-Finance-AI'];
+        let filtered = parsed.filter(c => validRepos.includes(c.repoName) || validRepos.some(r => (c.id || '').includes(r)));
+
+        // Ensure all 3 projects exist
+        if (!filtered.some(c => c.repoName === 'restaurant-ratings-tracker')) filtered.push(RESTAURANT_CAMPAIGN);
+        if (!filtered.some(c => c.repoName === 'to-do-list')) filtered.push(TODO_CAMPAIGN);
+        if (!filtered.some(c => c.repoName === 'Personal-Finance-AI')) filtered.push(FINANCE_CAMPAIGN);
+
+        // Update exact cron times matching cron-job.org console
+        filtered.forEach(c => {
+          if (c.repoName === 'restaurant-ratings-tracker') {
+            c.cronTime = '09:00';
+            c.workflowFile = 'daily_ratings.yml';
+            c.projectName = 'Daily Restaurant Ratings';
           }
-          if (c.id === 'legion0069-to-do-list' || c.repoName === 'to-do-list') {
+          if (c.repoName === 'to-do-list') {
             c.cronTime = '09:55';
+            c.workflowFile = 'daily-streak.yml';
+          }
+          if (c.repoName === 'Personal-Finance-AI') {
+            c.cronTime = '10:00';
+            c.workflowFile = 'daily-streak.yml';
           }
         });
-        if (!parsed.some(c => c.id === 'legion0069-personal-finance-ai' || c.repoName === 'Personal-Finance-AI')) {
-          parsed.unshift(FINANCE_CAMPAIGN);
-        }
-        if (!parsed.some(c => c.id === 'legion0069-to-do-list' || c.repoName === 'to-do-list')) {
-          parsed.push(DEFAULT_CAMPAIGN);
-        }
-        return parsed;
+
+        // Chronological order: 09:00, 09:55, 10:00
+        filtered.sort((a, b) => (a.cronTime || '').localeCompare(b.cronTime || ''));
+        return filtered;
       }
     }
   } catch (err) {
     console.error('Failed to parse saved campaigns:', err);
   }
-  return [FINANCE_CAMPAIGN, DEFAULT_CAMPAIGN];
+  return [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN];
 }
 
 function saveCampaignsToStorage(campaignList) {
@@ -619,7 +688,8 @@ async function triggerManualRun(campaignId, btnElement) {
 
   try {
     const { repoOwner, repoName, branch = 'main' } = campaign;
-    const dispatchUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/daily-streak.yml/dispatches`;
+    const workflow = campaign.workflowFile || 'daily-streak.yml';
+    const dispatchUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/${workflow}/dispatches`;
 
     const res = await fetch(dispatchUrl, {
       method: 'POST',
@@ -1284,7 +1354,9 @@ const cronDispatchStatus = document.getElementById('cronDispatchStatus');
 
 function getDispatchUrlForProject(repoName) {
   const repo = repoName || (cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI');
-  return `https://api.github.com/repos/legion0069/${repo}/actions/workflows/daily-streak.yml/dispatches`;
+  const workflow = repo === 'restaurant-ratings-tracker' ? 'daily_ratings.yml' : 'daily-streak.yml';
+  return `https://api.github.com/repos/legion0069/${repo}/actions/workflows/${workflow}/dispatches`;
+}/actions/workflows/daily-streak.yml/dispatches`;
 }
 
 function updateCronModalFields() {
@@ -1294,7 +1366,9 @@ function updateCronModalFields() {
 
   const schedulePreview = document.getElementById('cronScheduleTimePreview');
   if (schedulePreview) {
-    if (repo === 'to-do-list') {
+    if (repo === 'restaurant-ratings-tracker') {
+      schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:00 AM IST (09:00)</strong>';
+    } else if (repo === 'to-do-list') {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:55 AM IST (09:55)</strong>';
     } else {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:00 AM IST (10:00)</strong>';
