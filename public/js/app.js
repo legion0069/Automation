@@ -1257,3 +1257,122 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
   await fetchCampaigns();
 });
+
+
+// ==================== CRON-JOB.ORG SCHEDULER CONTROLLER ====================
+const cronJobModal = document.getElementById('cronJobModal');
+const btnOpenCronModal = document.getElementById('btnOpenCronModal');
+const btnCloseCronModal = document.getElementById('btnCloseCronModal');
+const btnCloseCronModal2 = document.getElementById('btnCloseCronModal2');
+const cronSelectProject = document.getElementById('cronSelectProject');
+const cronDispatchUrl = document.getElementById('cronDispatchUrl');
+const cronBodyText = document.getElementById('cronBodyText');
+const cronHeaderTokenPreview = document.getElementById('cronHeaderTokenPreview');
+const btnCopyCronUrl = document.getElementById('btnCopyCronUrl');
+const btnCopyCronBody = document.getElementById('btnCopyCronBody');
+const btnCopyCronHeaders = document.getElementById('btnCopyCronHeaders');
+const btnTestCronDispatchNow = document.getElementById('btnTestCronDispatchNow');
+const cronDispatchStatus = document.getElementById('cronDispatchStatus');
+
+function getDispatchUrlForProject(repoName) {
+  const repo = repoName || (cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI');
+  return `https://api.github.com/repos/legion0069/${repo}/actions/workflows/daily-streak.yml/dispatches`;
+}
+
+function updateCronModalFields() {
+  if (!cronDispatchUrl) return;
+  const repo = cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI';
+  cronDispatchUrl.value = getDispatchUrlForProject(repo);
+
+  const token = getSavedGhToken();
+  if (cronHeaderTokenPreview) {
+    if (token) {
+      cronHeaderTokenPreview.textContent = `${token.slice(0, 4)}••••••••${token.slice(-4)}`;
+      cronHeaderTokenPreview.title = 'Saved GitHub PAT is ready';
+    } else {
+      cronHeaderTokenPreview.textContent = 'YOUR_GITHUB_PAT (Connect in navbar)';
+    }
+  }
+}
+
+function openCronModal(targetRepo) {
+  if (!cronJobModal) return;
+  if (cronSelectProject && targetRepo) {
+    cronSelectProject.value = targetRepo;
+  }
+  updateCronModalFields();
+  if (cronDispatchStatus) cronDispatchStatus.innerHTML = '';
+  cronJobModal.style.display = 'flex';
+}
+
+function closeCronModal() {
+  if (cronJobModal) cronJobModal.style.display = 'none';
+}
+
+if (btnOpenCronModal) btnOpenCronModal.addEventListener('click', () => openCronModal());
+if (btnCloseCronModal) btnCloseCronModal.addEventListener('click', closeCronModal);
+if (btnCloseCronModal2) btnCloseCronModal2.addEventListener('click', closeCronModal);
+if (cronSelectProject) cronSelectProject.addEventListener('change', updateCronModalFields);
+
+if (btnCopyCronUrl) {
+  btnCopyCronUrl.addEventListener('click', () => {
+    if (!cronDispatchUrl) return;
+    navigator.clipboard.writeText(cronDispatchUrl.value);
+    showToast('Dispatch URL copied to clipboard!', 'success');
+  });
+}
+
+if (btnCopyCronBody) {
+  btnCopyCronBody.addEventListener('click', () => {
+    if (!cronBodyText) return;
+    navigator.clipboard.writeText(cronBodyText.value);
+    showToast('Request Body JSON copied!', 'success');
+  });
+}
+
+if (btnCopyCronHeaders) {
+  btnCopyCronHeaders.addEventListener('click', () => {
+    const token = getSavedGhToken() || 'YOUR_GITHUB_PAT';
+    const headerBlock = `Accept: application/vnd.github+json\nAuthorization: Bearer ${token}\nUser-Agent: cron-job-org`;
+    navigator.clipboard.writeText(headerBlock);
+    showToast('Headers block copied to clipboard!', 'success');
+  });
+}
+
+if (btnTestCronDispatchNow) {
+  btnTestCronDispatchNow.addEventListener('click', async () => {
+    const token = getSavedGhToken();
+    if (!token) {
+      cronDispatchStatus.innerHTML = `<span style="color: #ef4444;">❌ Please connect your GitHub PAT token first using "Connect GitHub" in top navbar.</span>`;
+      return;
+    }
+
+    const repo = cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI';
+    const dispatchUrl = getDispatchUrlForProject(repo);
+    cronDispatchStatus.innerHTML = '<span style="color: #38bdf8;">⏳ Dispatching instant run via GitHub API...</span>';
+
+    try {
+      const res = await fetch(dispatchUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      });
+
+      if (res.status === 204 || res.ok) {
+        cronDispatchStatus.innerHTML = `<span style="color: #22c55e; font-weight: bold;">✅ Success! GitHub Actions workflow dispatched instantly without delay!</span>`;
+        showToast('Instant trigger dispatched!', 'success');
+        setTimeout(() => fetchCampaigns(), 3000);
+      } else {
+        const text = await res.text();
+        cronDispatchStatus.innerHTML = `<span style="color: #ef4444;">❌ HTTP ${res.status}: ${escapeHtml(text || 'Dispatch failed. Verify your token has workflow permissions.')}</span>`;
+      }
+    } catch (err) {
+      cronDispatchStatus.innerHTML = `<span style="color: #ef4444;">❌ Error: ${escapeHtml(err.message)}</span>`;
+    }
+  });
+}
+

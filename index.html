@@ -49,6 +49,10 @@
           PAT Guide
         </button>
 
+                <button class="btn btn-outline" id="btnOpenCronModal" style="border-color: #f59e0b; color: #f59e0b;" title="Configure exact 4:00 PM IST trigger with zero delay via cron-job.org">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          cron-job.org (Zero Delay)
+        </button>
         <button class="btn btn-outline" id="btnActionsGuide">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           Actions Setup
@@ -494,236 +498,97 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: CRON-JOB.ORG ==================== -->
+    <!-- ==================== MODAL: CRON-JOB.ORG SCHEDULER ==================== -->
   <div class="modal-backdrop" id="cronJobModal">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 680px;">
       <div class="modal-header">
         <div>
-          <h3>cron-job.org Trigger Setup (4:00 PM IST)</h3>
-          <p class="modal-subtitle">Trigger your daily commits automatically every day at 4:00 PM IST using free cloud webcron.</p>
+          <h3>⚡ cron-job.org Zero-Delay Scheduler</h3>
+          <p class="modal-subtitle">GitHub Actions native schedule can be delayed up to 60 minutes. Use free webcron to trigger exactly at 4:00:00 PM IST.</p>
         </div>
         <button class="btn-close" id="btnCloseCronModal">&times;</button>
       </div>
 
       <div class="modal-body pat-guide-content">
-        <p style="font-size: 0.85rem; color: var(--text-muted);">
-          Use <a href="https://cron-job.org" target="_blank" rel="noopener">cron-job.org</a> (free tier) to trigger your daily commits automatically on the exact second every day at 4:00 PM IST:
-        </p>
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.85rem; color: #f59e0b;">
+          💡 <strong>Why cron-job.org?</strong> GitHub's internal cron runners queue jobs on busy hours. cron-job.org hits the GitHub API dispatch directly, giving your commits <strong>immediate top priority with zero queue delay</strong>.
+        </div>
 
-        <div class="guide-step">
-          <span class="step-circle">1</span>
-          <div>
-            <strong>Option A: Trigger GitHub Actions Directly (Zero Server Required!)</strong>
-            <p style="margin-top: 4px;">URL: <code>https://api.github.com/repos/legion0069/to-do-list/actions/workflows/daily-streak.yml/dispatches</code></p>
-            <p>Method: <strong>POST</strong></p>
-            <p>Headers: <code>Authorization: Bearer YOUR_GITHUB_TOKEN</code> &bull; <code>Accept: application/vnd.github+json</code> &bull; <code>User-Agent: cron-job-org</code></p>
-            <p>Body: <code>{"ref":"main"}</code></p>
-          </div>
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 6px;">Select Target Project:</label>
+          <select id="cronSelectProject" class="form-input" style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px;">
+            <option value="Personal-Finance-AI" selected>Personal Finance AI (legion0069/Personal-Finance-AI)</option>
+            <option value="to-do-list">To-Do List Autonomous Project (legion0069/to-do-list)</option>
+          </select>
         </div>
 
         <div class="guide-step">
-          <span class="step-circle">2</span>
-          <div>
-            <strong>Option B: Trigger Webhook Endpoint (If Server Deployed)</strong>
+          <span class="step-circle">1</span>
+          <div style="flex: 1;">
+            <strong>Step 1: Target Dispatch URL</strong>
             <div class="share-copy-box" style="margin-top: 6px;">
-              <input type="text" id="cronWebhookUrl" readonly>
+              <input type="text" id="cronDispatchUrl" readonly style="font-family: monospace; font-size: 0.8rem;">
               <button class="btn btn-secondary btn-sm" id="btnCopyCronUrl">Copy URL</button>
             </div>
-            <p style="color: #fbbf24; font-size: 0.8rem; margin-top: 4px;">⚠️ <strong>Note:</strong> Ensure the URL ends with <code>/api/cron/trigger</code>.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">2</span>
+          <div style="flex: 1;">
+            <strong>Step 2: Request Method & Request Body</strong>
+            <p style="margin-top: 4px; font-size: 0.85rem;">HTTP Method: <strong style="color: #38bdf8;">POST</strong></p>
+            <div class="share-copy-box" style="margin-top: 6px;">
+              <input type="text" id="cronBodyText" value='{"ref":"main"}' readonly style="font-family: monospace; font-size: 0.8rem;">
+              <button class="btn btn-secondary btn-sm" id="btnCopyCronBody">Copy Body</button>
+            </div>
           </div>
         </div>
 
         <div class="guide-step">
           <span class="step-circle">3</span>
-          <div>
-            <strong>Set Schedule & Timezone</strong>
-            <p>Schedule: <strong>Daily at 16:00 (4:00 PM)</strong></p>
-            <p>Timezone: <strong>Asia/Kolkata (IST)</strong></p>
-          </div>
-        </div>
-            <p>Timezone: <strong>Asia/Kolkata (IST)</strong></p>
-            <p>HTTP Method: <strong>GET</strong> (or <strong>POST</strong>)</p>
+          <div style="flex: 1;">
+            <strong>Step 3: Request Headers</strong>
+            <div style="background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-top: 6px; font-family: monospace; font-size: 0.8rem; line-height: 1.6;">
+              <div><strong>Accept:</strong> application/vnd.github+json</div>
+              <div><strong>Authorization:</strong> Bearer <span id="cronHeaderTokenPreview" style="color: #34d399;">YOUR_GITHUB_PAT</span></div>
+              <div><strong>User-Agent:</strong> cron-job-org</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnCopyCronHeaders" style="margin-top: 6px;">Copy Headers Block</button>
           </div>
         </div>
 
         <div class="guide-step">
           <span class="step-circle">4</span>
-          <div>
-            <strong>Test Trigger Now</strong>
-            <p>Click below to test calling this webhook endpoint directly:</p>
-            <button type="button" class="btn btn-primary btn-sm" id="btnTestCronEndpoint" style="margin-top: 6px;">
-              Test Webhook Trigger Now
+          <div style="flex: 1;">
+            <strong>Step 4: Execution Schedule on cron-job.org</strong>
+            <div style="margin-top: 4px; font-size: 0.85rem; line-height: 1.6;">
+              <div>⏰ Execution Schedule: <strong>Daily at 16:00 (4:00 PM)</strong></div>
+              <div>🌍 Timezone: <strong>Asia/Kolkata (IST)</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="step-circle">5</span>
+          <div style="flex: 1;">
+            <strong>Step 5: Test Instant Trigger Right Now</strong>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Verify that GitHub Actions immediately launches without delay:</p>
+            <button type="button" class="btn btn-primary btn-sm" id="btnTestCronDispatchNow" style="margin-top: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              Test Instant Trigger Now
             </button>
-            <div class="verify-status" id="cronEndpointStatus" style="margin-top: 8px;"></div>
+            <div class="verify-status" id="cronDispatchStatus" style="margin-top: 8px;"></div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <a href="https://cron-job.org" target="_blank" rel="noopener" class="btn btn-primary">
-          Open cron-job.org
+        <a href="https://cron-job.org/en/members/jobs/add/" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Open cron-job.org & Create Job
         </a>
         <button class="btn btn-outline" id="btnCloseCronModal2">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: MONGODB STATUS & SETUP ==================== -->
-  <div class="modal-backdrop" id="dbModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div>
-          <h3>Database Configuration (MongoDB)</h3>
-          <p class="modal-subtitle">Persistent multi-user storage across restarts & cloud hosting.</p>
-        </div>
-        <button class="btn-close" id="btnCloseDbModal">&times;</button>
-      </div>
-
-      <div class="modal-body pat-guide-content">
-        <div id="dbStatusBadge" class="verify-status info" style="display: block;">
-          Active Storage Engine: <strong id="dbEngineText">Checking...</strong>
-        </div>
-
-        <p style="font-size: 0.85rem; color: var(--text-muted);">
-          GitStreak AI supports both <strong>MongoDB (Atlas or self-hosted)</strong> and <strong>Local Persistent Storage</strong>. When deployed to Render, setting your MongoDB URI guarantees your data and campaigns persist forever across restarts!
-        </p>
-
-        <div class="guide-step">
-          <span class="step-circle">1</span>
-          <div>
-            <strong>Get a Free MongoDB Atlas Database</strong>
-            <p>1. Sign in to <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" rel="noopener">MongoDB Atlas</a> (free tier available).</p>
-            <p>2. Create a Free Shared Cluster (M0).</p>
-            <p>3. Go to <strong>Network Access</strong> &rarr; Add IP Address: <code>0.0.0.0/0</code> (Allow Access from Anywhere).</p>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">2</span>
-          <div>
-            <strong>Copy Connection String</strong>
-            <p>Click <strong>Connect</strong> &rarr; <strong>Drivers</strong> &rarr; Copy the connection string:</p>
-            <code>mongodb+srv://&lt;username&gt;:&lt;password&gt;@cluster0.xxxxx.mongodb.net/gitstreak?retryWrites=true&w=majority</code>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">3</span>
-          <div>
-            <strong>Add Environment Variable</strong>
-            <p>In your <strong>Render Dashboard</strong> (or local <code>.env</code> file), add:</p>
-            <code>MONGODB_URI=your_mongodb_connection_string</code>
-            <p>Save and deploy! GitStreak will automatically connect and persist all user accounts and streak campaigns.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline" id="btnCloseDbModal2">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: GITHUB OAUTH SETUP ==================== -->
-  <div class="modal-backdrop" id="oauthModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div>
-          <h3>Setup GitHub OAuth Login</h3>
-          <p class="modal-subtitle">Enable 1-Click "Sign in with GitHub" for yourself and your friends.</p>
-        </div>
-        <button class="btn-close" id="btnCloseOauthModal">&times;</button>
-      </div>
-
-      <div class="modal-body pat-guide-content">
-        <div class="guide-step">
-          <span class="step-circle">1</span>
-          <div>
-            <strong>Create an OAuth App on GitHub</strong>
-            <p>Go to <a href="https://github.com/settings/developers" target="_blank" rel="noopener">GitHub Settings &rarr; Developer Settings &rarr; OAuth Apps</a> and click <strong>"New OAuth App"</strong>.</p>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">2</span>
-          <div>
-            <strong>Fill in Application Details</strong>
-            <p>&bull; Application name: <code>GitStreak AI</code></p>
-            <p>&bull; Homepage URL: <code id="oauthHomeUrlText">https://...</code></p>
-            <p>&bull; Authorization callback URL:</p>
-            <code id="oauthCallbackUrlText">https://.../api/auth/github/callback</code>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">3</span>
-          <div>
-            <strong>Copy Client ID and Client Secret</strong>
-            <p>Click <strong>"Generate a new client secret"</strong> and add these 2 environment variables to Render (or local <code>.env</code>):</p>
-            <code>GITHUB_CLIENT_ID=your_client_id</code><br>
-            <code>GITHUB_CLIENT_SECRET=your_client_secret</code>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <a href="https://github.com/settings/developers" target="_blank" rel="noopener" class="btn btn-primary">
-          Open GitHub Developer Settings
-        </a>
-        <button class="btn btn-outline" id="btnCloseOauthModal2">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: GITHUB ACTIONS GUIDE ==================== -->
-  <div class="modal-backdrop" id="actionsGuideModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div>
-          <h3>Serverless GitHub Actions Setup</h3>
-          <p class="modal-subtitle">Runs daily at 4:00 PM IST directly on GitHub's cloud — 100% free with zero servers.</p>
-        </div>
-        <button class="btn-close" id="btnCloseActionsGuideModal">&times;</button>
-      </div>
-
-      <div class="modal-body pat-guide-content">
-        <div class="guide-step">
-          <span class="step-circle">1</span>
-          <div>
-            <strong>Workflow File in Target Repository</strong>
-            <p>Ensure your target repository contains <code>.github/workflows/daily-streak.yml</code> with the daily schedule:</p>
-            <code>schedule:<br>&nbsp;&nbsp;- cron: '30 10 * * *' &nbsp;# 4:00 PM IST (16:00 IST / 10:30 UTC)</code>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">2</span>
-          <div>
-            <strong>Streak Runner Script</strong>
-            <p>Ensure your repo has <code>scripts/streak-runner.js</code> to generate real code milestones and push commits.</p>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">3</span>
-          <div>
-            <strong>Add GEMINI_API_KEY Secret</strong>
-            <p>Go to target repo &rarr; <strong>Settings &rarr; Secrets and variables &rarr; Actions</strong> &rarr; Add <code>GEMINI_API_KEY</code>.</p>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px;">(Even without an API key, the built-in resilient code generator will create valid code to preserve your streak!)</p>
-          </div>
-        </div>
-
-        <div class="guide-step">
-          <span class="step-circle">4</span>
-          <div>
-            <strong>Triggering Runs Anytime</strong>
-            <p>You can trigger runs manually from this web UI using <strong>"Run Today's Commit"</strong>, or directly in GitHub under the <strong>Actions</strong> tab &rarr; <strong>Run workflow</strong>.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="btnCloseActionsGuideModal2">Got It</button>
       </div>
     </div>
   </div>
