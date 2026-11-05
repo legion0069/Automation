@@ -81,27 +81,6 @@ const FINANCE_ROADMAP = [
   { day: 10, title: "End-to-End System Integration, Security Audit & v1.0.0 Release Packaging", description: "Comprehensive end-to-end integration test suite, REST API endpoints, transaction export/import (CSV/JSON), and production v1.0.0 release packaging." }
 ];
 
-const FINANCE_CAMPAIGN = {
-  id: 'legion0069-personal-finance-ai',
-  repoOwner: 'legion0069',
-  repoName: 'Personal-Finance-AI',
-  branch: 'main',
-  projectName: 'Personal Finance AI',
-  projectDescription: 'Autonomous AI Personal Finance OS: bank statement parser, spending analysis, dynamic budget, cash flow forecast, investment suggestions, monthly reports, and expense chat.',
-  cronTime: '10:00',
-  timezone: 'Asia/Kolkata',
-  totalDays: 10,
-  currentDay: 1,
-  commitsPerDay: 6,
-  status: 'active',
-  totalCommitsPushed: 2,
-  hasRunToday: false,
-  lastRunDate: null,
-  commitsHistory: [],
-  history: [],
-  plan: FINANCE_ROADMAP
-};
-
 const DEFAULT_ROADMAP = [
   { day: 1, title: "Project setup, directory scaffolding & environment config", description: "Initialize repository structure, scripts/streak-runner, package metadata, and workflows." },
   { day: 2, title: "Project goal, core data models & task schema definitions", description: "Design task entities, status enums, priority flags, and schema definitions." },
@@ -1355,8 +1334,7 @@ const cronDispatchStatus = document.getElementById('cronDispatchStatus');
 function getDispatchUrlForProject(repoName) {
   const repo = repoName || (cronSelectProject ? cronSelectProject.value : 'Personal-Finance-AI');
   const workflow = repo === 'restaurant-ratings-tracker' ? 'daily_ratings.yml' : 'daily-streak.yml';
-  return `https://api.github.com/repos/legion0069/${repo}/actions/workflows/${workflow}/dispatches`;
-}/actions/workflows/daily-streak.yml/dispatches`;
+  return "https://api.github.com/repos/legion0069/" + repo + "/actions/workflows/" + workflow + "/dispatches";
 }
 
 function updateCronModalFields() {
