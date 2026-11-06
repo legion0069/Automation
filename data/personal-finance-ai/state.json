@@ -1,9 +1,9 @@
 {
   "projectName": "Personal-Finance-AI",
   "totalDays": 10,
-  "currentDay": 2,
+  "currentDay": 3,
   "commitsPerDay": 6,
-  "lastRunDate": "2026-11-05",
+  "lastRunDate": "2026-11-06",
   "roadmap": [
     {
       "day": 1,
@@ -61,6 +61,12 @@
       "day": 1,
       "milestone": "Financial Data Architecture, Bank Statement Models & Transaction Schemas",
       "date": "2026-11-05",
+      "commitsCount": 6
+    },
+    {
+      "day": 2,
+      "milestone": "Bank Statement Parser & Multi-Format Ingestion Engine",
+      "date": "2026-11-06",
       "commitsCount": 6
     }
   ]
