@@ -1,8 +1,8 @@
 {
   "projectName": "to-do-list",
   "totalDays": 10,
-  "currentDay": 9,
-  "lastRunDate": "2026-11-05",
+  "currentDay": 10,
+  "lastRunDate": "2026-11-06",
   "roadmap": [
     "Project setup, directory scaffolding, and environment config",
     "Project goal, core data models, and schema definitions",
@@ -62,6 +62,12 @@
       "day": 8,
       "milestone": "Interactive web frontend UI (task dashboard, card grid, status toggles)",
       "date": "2026-11-05",
+      "commitsCount": 4
+    },
+    {
+      "day": 9,
+      "milestone": "Local persistence adapter, JSON/CSV export/import, and dark mode",
+      "date": "2026-11-06",
       "commitsCount": 4
     }
   ]
