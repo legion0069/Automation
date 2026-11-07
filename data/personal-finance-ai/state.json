@@ -1,9 +1,9 @@
 {
   "projectName": "Personal-Finance-AI",
   "totalDays": 10,
-  "currentDay": 3,
+  "currentDay": 4,
   "commitsPerDay": 6,
-  "lastRunDate": "2026-11-06",
+  "lastRunDate": "2026-11-07",
   "roadmap": [
     {
       "day": 1,
@@ -67,6 +67,12 @@
       "day": 2,
       "milestone": "Bank Statement Parser & Multi-Format Ingestion Engine",
       "date": "2026-11-06",
+      "commitsCount": 6
+    },
+    {
+      "day": 3,
+      "milestone": "AI Spending Analysis & Merchant Categorization Engine",
+      "date": "2026-11-07",
       "commitsCount": 6
     }
   ]
