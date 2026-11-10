@@ -170,7 +170,64 @@ const FINANCE_CAMPAIGN = {
   plan: FINANCE_ROADMAP
 };
 
-const DEFAULT_CAMPAIGNS = [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN];
+// AI Resume Optimization Agent 30-Day Development Roadmap
+const RESUME_ROADMAP = [
+  { day: 1, title: "Project Setup, Component Architecture & Candidate Profile Schemas", description: "Scaffold repository structure, core models for candidate component pool (projects, internships, work experiences, skills, education, certifications), and test framework." },
+  { day: 2, title: "Candidate Component Repository Engine & CRUD Store", description: "Implement in-memory and file-backed repository for storing, updating, tagging, and querying candidate experience items and technical components." },
+  { day: 3, title: "Bullet-Point Action Verb & STAR Impact Metric Normalizer", description: "Build bullet-point evaluator following STAR methodology (Situation, Task, Action, Result), detect active verbs, and highlight quantifiable performance metrics." },
+  { day: 4, title: "Skills Taxonomy & Technical Hierarchy Engine", description: "Classify candidate skills into Languages, Frameworks, Cloud/DevOps, Databases, Tools, and Soft Skills with proficiency and domain weightings." },
+  { day: 5, title: "Candidate Profile Import/Export & Multi-Format Ingestion", description: "Support ingestion and export of candidate component pools from JSON Resume, Markdown portfolio documents, and structured plain-text files." },
+  { day: 6, title: "Job Description (JD) NLP Parser & Requirement Extractor", description: "Parse dropped/pasted job descriptions, extract role title, seniority level, must-have requirements, nice-to-have qualifications, and core responsibilities." },
+  { day: 7, title: "ATS Keyword Density & Technical Skill Matcher", description: "Extract critical ATS keywords, industry acronyms, and technical tooling from job postings to form an optimization target vector." },
+  { day: 8, title: "Semantic Relevance & Component Compatibility Scoring Engine", description: "Develop multi-variable scoring algorithm to compute compatibility match percentages (0-100%) between candidate projects/internships and JD targets." },
+  { day: 9, title: "Intelligent Project & Internship Recommendation Ranker", description: "Rank and suggest top candidate projects, internships, and skill badges tailored specifically to maximize interview callback rates for the target JD." },
+  { day: 10, title: "ATS Keyword Gap & Missing Skill Detection Engine", description: "Identify critical competencies present in the job description that are missing or underrepresented in the candidate's selected components." },
+  { day: 11, title: "Interactive Component Checklist & State Management Engine", description: "Stateful checklist controller allowing users to interactively check, uncheck, swap, and customize suggested components before finalizing." },
+  { day: 12, title: "Resume Page-Budget & Line Density Calculator", description: "Estimate physical page layout, line count, bullet constraints, and visual density to ensure a crisp single-page (or two-page) resume standard." },
+  { day: 13, title: "Dynamic Section Priority & Layout Configurator", description: "Dynamically reorder sections based on target role (e.g. Projects-first for early-career/academic roles vs. Experience-first for senior industry positions)." },
+  { day: 14, title: "AI Executive Summary & Targeted Objective Generator", description: "Synthesize a 3-4 sentence professional summary tightly calibrated to the target company, role, and candidate's ticked highlight components." },
+  { day: 15, title: "ATS Compatibility & Parser Compliance Pre-Flight Checker", description: "Verify resume headings, fonts, ASCII glyphs, dates, and contact blocks against standard ATS scanner algorithms (Workday, Greenhouse, Lever)." },
+  { day: 16, title: "Profile Pool vs. Tailored Resume Diff & Delta Inspector", description: "Compute side-by-side diff comparing candidate's entire component repository against the customized snapshot created for this specific application." },
+  { day: 17, title: "Project & Experience Bullet-Point Rephraser", description: "Contextually rephrase component bullet points to incorporate target JD terminology and highlight relevant technologies." },
+  { day: 18, title: "Quantifiable Metric & Business Impact Enhancer", description: "Analyze accomplishments and prompt for quantifiable metrics (latencies, percentages, revenue, users) to boost impact visibility." },
+  { day: 19, title: "Role-Specific Technical Acronym & Nomenclature Harmonizer", description: "Align component terminology with JD naming conventions (e.g. 'Kubernetes' vs 'K8s', 'GCP' vs 'Google Cloud Platform')." },
+  { day: 20, title: "Tailored Cover Letter Synthesis Engine", description: "Auto-generate an aligned cover letter connecting the selected resume projects with the hiring team's stated mission and pain points." },
+  { day: 21, title: "Interview Prep & Resume Talking-Points Synthesizer", description: "Generate probable technical and behavioral interview questions based on the candidate's ticked projects and the JD requirements." },
+  { day: 22, title: "ATS-Compliant Markdown & Plaintext Resume Renderer", description: "Render customized resume into perfectly formatted, human-readable, and machine-parsable Markdown and clean text outputs." },
+  { day: 23, title: "Responsive HTML/CSS Resume Template Engine", description: "Provide modern, executive, and technical minimalist HTML/CSS resume templates optimized for web viewing and browser printing." },
+  { day: 24, title: "High-Fidelity Print-Ready PDF Styling & Paged Media Controller", description: "Implement CSS Paged Media @page styling, precise margins, orphan/widow suppression, and print styles for perfect PDF generation." },
+  { day: 25, title: "JSON Resume Standard Exporter & Schema Validator", description: "Export finalized customized resume into schema-valid jsonresume.org standard JSON format for interoperability." },
+  { day: 26, title: "Multi-Target Resume Portfolio & Version Snapshot Manager", description: "Store and organize tailored resume versions across multiple companies (e.g. Google, Amazon, Microsoft, Stripe) with application status tracking." },
+  { day: 27, title: "Interactive Web Dashboard: Component Pool & JD Dropzone", description: "Web dashboard interface featuring component input forms (projects, internships, skills) and an intuitive drag-and-drop / paste zone for job descriptions." },
+  { day: 28, title: "Interactive Web Dashboard: Recommendation Deck & One-Click Finalizer", description: "Interactive suggestion UI with suitability badges, toggle checkboxes for each component, live preview pane, and 'Finalize Resume' button." },
+  { day: 29, title: "End-to-End System Integration & Multi-JD Benchmark Test Suite", description: "Comprehensive integration testing simulating 10+ real-world tech job descriptions and evaluating ATS compatibility scores." },
+  { day: 30, title: "Production Packaging, Comprehensive User Guide & v1.0.0 Release", description: "Finalize CLI executable, comprehensive documentation, user manual, and publish official production v1.0.0 release." }
+];
+
+// 4. AI Resume Optimization Agent (10:30 AM IST)
+const RESUME_CAMPAIGN = {
+  id: 'legion0069-ai-resume-optimization-agent',
+  repoOwner: 'legion0069',
+  repoName: 'AI-Resume-Optimization-Agent',
+  workflowFile: 'daily-streak.yml',
+  branch: 'main',
+  projectName: 'AI Resume Optimization Agent',
+  projectDescription: 'Candidate component pool builder (projects, internships, skills), JD semantic matcher, suitability recommendation ranker, interactive checklist, and customized ATS resume finalizer.',
+  cronTime: '10:30',
+  timezone: 'Asia/Kolkata',
+  totalDays: 30,
+  currentDay: 1,
+  commitsPerDay: 4,
+  status: 'active',
+  totalCommitsPushed: 1,
+  hasRunToday: false,
+  lastRunDate: null,
+  commitsHistory: [],
+  history: [],
+  plan: RESUME_ROADMAP
+};
+
+const DEFAULT_CAMPAIGNS = [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN, RESUME_CAMPAIGN];
 
 const DEFAULT_CAMPAIGN = RESTAURANT_CAMPAIGN;
 // ----------------- TOAST NOTIFICATIONS -----------------
@@ -328,14 +385,15 @@ function loadCampaignsFromStorage() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Enforce the exact 3 cron-job.org projects
-        const validRepos = ['restaurant-ratings-tracker', 'to-do-list', 'Personal-Finance-AI'];
+        // Enforce the 4 cron-job.org projects
+        const validRepos = ['restaurant-ratings-tracker', 'to-do-list', 'Personal-Finance-AI', 'AI-Resume-Optimization-Agent'];
         let filtered = parsed.filter(c => validRepos.includes(c.repoName) || validRepos.some(r => (c.id || '').includes(r)));
 
-        // Ensure all 3 projects exist
+        // Ensure all 4 projects exist
         if (!filtered.some(c => c.repoName === 'restaurant-ratings-tracker')) filtered.push(RESTAURANT_CAMPAIGN);
         if (!filtered.some(c => c.repoName === 'to-do-list')) filtered.push(TODO_CAMPAIGN);
         if (!filtered.some(c => c.repoName === 'Personal-Finance-AI')) filtered.push(FINANCE_CAMPAIGN);
+        if (!filtered.some(c => c.repoName === 'AI-Resume-Optimization-Agent')) filtered.push(RESUME_CAMPAIGN);
 
         // Update exact cron times matching cron-job.org console
         filtered.forEach(c => {
@@ -356,9 +414,14 @@ function loadCampaignsFromStorage() {
             c.cronTime = '10:00';
             c.workflowFile = 'daily-streak.yml';
           }
+          if (c.repoName === 'AI-Resume-Optimization-Agent') {
+            c.cronTime = '10:30';
+            c.workflowFile = 'daily-streak.yml';
+            c.projectName = 'AI Resume Optimization Agent';
+          }
         });
 
-        // Chronological order: 09:00, 09:55, 10:00
+        // Chronological order: 09:00, 09:55, 10:00, 10:30
         filtered.sort((a, b) => (a.cronTime || '').localeCompare(b.cronTime || ''));
         return filtered;
       }
@@ -366,7 +429,7 @@ function loadCampaignsFromStorage() {
   } catch (err) {
     console.error('Failed to parse saved campaigns:', err);
   }
-  return [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN];
+  return [RESTAURANT_CAMPAIGN, TODO_CAMPAIGN, FINANCE_CAMPAIGN, RESUME_CAMPAIGN];
 }
 
 function saveCampaignsToStorage(campaignList) {
@@ -1368,6 +1431,8 @@ function updateCronModalFields() {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:00 AM IST (09:00)</strong>';
     } else if (repo === 'to-do-list') {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:55 AM IST (09:55)</strong>';
+    } else if (repo === 'AI-Resume-Optimization-Agent') {
+      schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:30 AM IST (10:30)</strong>';
     } else {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:00 AM IST (10:00)</strong>';
     }
