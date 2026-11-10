@@ -131,16 +131,17 @@ const TODO_CAMPAIGN = {
   workflowFile: 'daily-streak.yml',
   branch: 'main',
   projectName: 'To-Do List Autonomous Project',
-  projectDescription: 'Full-stack To-Do List Application with real daily feature milestones pushed automatically.',
+  projectDescription: 'Full-stack To-Do List Application — 100% Completed & Released under v1.0.0.',
   cronTime: '09:55',
   timezone: 'Asia/Kolkata',
   totalDays: 10,
-  currentDay: 9,
+  currentDay: 10,
   commitsPerDay: 4,
-  status: 'active',
-  totalCommitsPushed: 36,
+  status: 'completed',
+  isCompleted: true,
+  totalCommitsPushed: 40,
   hasRunToday: true,
-  lastRunDate: '2026-11-05',
+  lastRunDate: '2026-11-07',
   commitsHistory: [],
   history: [],
   plan: DEFAULT_ROADMAP
@@ -245,7 +246,7 @@ function renderRoadmapStreakHeatmap(campaign) {
     const milestoneDesc = typeof milestone === 'string' ? '' : (milestone.description || '');
 
     // Check completion status
-    const isCompleted = dayNum < currentDay;
+    const isCompleted = c.status === 'completed' || dayNum < currentDay;
     const isToday = (dayNum === currentDay);
 
     let statusText = '';
@@ -346,6 +347,10 @@ function loadCampaignsFromStorage() {
           if (c.repoName === 'to-do-list') {
             c.cronTime = '09:55';
             c.workflowFile = 'daily-streak.yml';
+            c.status = 'completed';
+            c.isCompleted = true;
+            c.currentDay = 10;
+            c.totalDays = 10;
           }
           if (c.repoName === 'Personal-Finance-AI') {
             c.cronTime = '10:00';
@@ -429,7 +434,14 @@ async function syncCampaignFromGitHub(campaign) {
     const stateRes = await fetch(stateUrl);
     if (stateRes.ok) {
       const stateData = await stateRes.json();
-      campaign.currentDay = Number(stateData.currentDay) || campaign.currentDay;
+      if (stateData.status === 'completed' || stateData.isCompleted === true) {
+        campaign.status = 'completed';
+        campaign.isCompleted = true;
+        campaign.currentDay = Number(stateData.totalDays || 10);
+        campaign.hasRunToday = true;
+      } else {
+        campaign.currentDay = Number(stateData.currentDay) || campaign.currentDay;
+      }
       campaign.totalDays = Number(stateData.totalDays) || campaign.totalDays;
       campaign.lastRunDate = stateData.lastRunDate || stateData.lastCompletedDate || campaign.lastRunDate;
       campaign.history = Array.isArray(stateData.history) ? stateData.history : campaign.history;
@@ -497,7 +509,10 @@ function updateStats() {
   const currentDay = primaryCampaign.currentDay || 4;
   const totalDays = primaryCampaign.totalDays || 30;
 
-  if (statActiveCount) statActiveCount.textContent = active;
+  if (statActiveCount) {
+    const completedCount = campaigns.filter(c => c.status === 'completed').length;
+    statActiveCount.textContent = completedCount > 0 ? `${active} Active (${completedCount} Done)` : active;
+  }
   if (statCommitsCount) statCommitsCount.textContent = totalCommits;
   if (statCurrentProgress) statCurrentProgress.textContent = `Day ${currentDay} / ${totalDays}`;
 
@@ -579,18 +594,18 @@ function renderCampaigns() {
         <!-- Progress -->
         <div class="card-progress">
           <div class="progress-labels">
-            <span>Day ${currentDay} of ${totalDays}</span>
-            <span>${progressPercent}% Complete</span>
+            <span>Day ${c.status === 'completed' ? totalDays : currentDay} of ${totalDays}</span>
+            <span>${c.status === 'completed' ? 100 : progressPercent}% Complete</span>
           </div>
           <div class="progress-track">
-            <div class="progress-fill" style="width: ${progressPercent}%;"></div>
+            <div class="progress-fill" style="width: ${c.status === 'completed' ? 100 : progressPercent}%; background: ${c.status === 'completed' ? 'linear-gradient(90deg, #10b981, #34d399)' : ''};"></div>
           </div>
         </div>
 
         <!-- Today's Target Milestone -->
         <div class="milestone-preview-box">
-          <span class="milestone-title-tag">Day ${currentDay} Milestone:</span>
-          <div class="milestone-text">${escapeHtml(milestoneText)}</div>
+          <span class="milestone-title-tag">${c.status === 'completed' ? '🎉 Final Milestone Status:' : `Day ${currentDay} Milestone:`}</span>
+          <div class="milestone-text">${c.status === 'completed' ? '🎉 All 10 development milestones delivered, verified, and sealed under v1.0.0 release!' : escapeHtml(milestoneText)}</div>
         </div>
 
         <!-- Meta chips -->
@@ -618,10 +633,15 @@ function renderCampaigns() {
 
         <!-- Actions -->
         <div class="card-actions">
-          <button class="btn btn-primary btn-sm" onclick="triggerManualRun('${c.id}', this)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            Run Today's Commit
-          </button>
+          ${c.status === 'completed'
+      ? `<a href="https://github.com/${c.repoOwner}/${c.repoName}/releases/tag/v1.0.0" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+           🏆 View Release v1.0.0
+         </a>`
+      : `<button class="btn btn-primary btn-sm" onclick="triggerManualRun('${c.id}', this)">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+           Run Today's Commit
+         </button>`
+    }
           
           <button class="btn btn-secondary btn-sm" onclick="openLogsModal('${c.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
