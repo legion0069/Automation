@@ -204,14 +204,14 @@ const RESUME_ROADMAP = [
   { day: 30, title: "Production Packaging, Comprehensive User Guide & v1.0.0 Release", description: "Finalize CLI executable, comprehensive documentation, user manual, and publish official production v1.0.0 release." }
 ];
 
-// 4. AI Resume Optimization Agent (10:30 AM IST)
+// 4. AI Resume Customisation for JD (10:30 AM IST)
 const RESUME_CAMPAIGN = {
-  id: 'legion0069-ai-resume-optimization-agent',
+  id: 'legion0069-ai-resume-customisation-for-jd',
   repoOwner: 'legion0069',
-  repoName: 'AI-Resume-Optimization-Agent',
+  repoName: 'Ai-Resume-Customisation-for-jd',
   workflowFile: 'daily-streak.yml',
   branch: 'main',
-  projectName: 'AI Resume Optimization Agent',
+  projectName: 'AI Resume Customisation for JD',
   projectDescription: 'Candidate component pool builder (projects, internships, skills), JD semantic matcher, suitability recommendation ranker, interactive checklist, and customized ATS resume finalizer.',
   cronTime: '10:30',
   timezone: 'Asia/Kolkata',
@@ -386,14 +386,14 @@ function loadCampaignsFromStorage() {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
         // Enforce the 4 cron-job.org projects
-        const validRepos = ['restaurant-ratings-tracker', 'to-do-list', 'Personal-Finance-AI', 'AI-Resume-Optimization-Agent'];
+        const validRepos = ['restaurant-ratings-tracker', 'to-do-list', 'Personal-Finance-AI', 'Ai-Resume-Customisation-for-jd'];
         let filtered = parsed.filter(c => validRepos.includes(c.repoName) || validRepos.some(r => (c.id || '').includes(r)));
 
         // Ensure all 4 projects exist
         if (!filtered.some(c => c.repoName === 'restaurant-ratings-tracker')) filtered.push(RESTAURANT_CAMPAIGN);
         if (!filtered.some(c => c.repoName === 'to-do-list')) filtered.push(TODO_CAMPAIGN);
         if (!filtered.some(c => c.repoName === 'Personal-Finance-AI')) filtered.push(FINANCE_CAMPAIGN);
-        if (!filtered.some(c => c.repoName === 'AI-Resume-Optimization-Agent')) filtered.push(RESUME_CAMPAIGN);
+        if (!filtered.some(c => c.repoName === 'Ai-Resume-Customisation-for-jd')) filtered.push(RESUME_CAMPAIGN);
 
         // Update exact cron times matching cron-job.org console
         filtered.forEach(c => {
@@ -414,10 +414,10 @@ function loadCampaignsFromStorage() {
             c.cronTime = '10:00';
             c.workflowFile = 'daily-streak.yml';
           }
-          if (c.repoName === 'AI-Resume-Optimization-Agent') {
+          if (c.repoName === 'Ai-Resume-Customisation-for-jd') {
             c.cronTime = '10:30';
             c.workflowFile = 'daily-streak.yml';
-            c.projectName = 'AI Resume Optimization Agent';
+            c.projectName = 'AI Resume Customisation for JD';
           }
         });
 
@@ -1431,7 +1431,7 @@ function updateCronModalFields() {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:00 AM IST (09:00)</strong>';
     } else if (repo === 'to-do-list') {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 09:55 AM IST (09:55)</strong>';
-    } else if (repo === 'AI-Resume-Optimization-Agent') {
+    } else if (repo === 'Ai-Resume-Customisation-for-jd') {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:30 AM IST (10:30)</strong>';
     } else {
       schedulePreview.innerHTML = '⏰ Execution Schedule: <strong>Daily at 10:00 AM IST (10:00)</strong>';
