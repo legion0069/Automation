@@ -1,15 +1,15 @@
 {
   "projectName": "AI Resume Optimization Agent",
-  "repoName": "AI-Resume-Optimization-Agent",
+  "repoName": "Ai-Resume-Customisation-for-jd",
   "repoOwner": "legion0069",
-  "currentDay": 1,
+  "currentDay": 2,
   "totalDays": 30,
   "commitsPerDay": 4,
   "cronTime": "10:30",
   "timezone": "Asia/Kolkata",
   "status": "active",
-  "lastRunDate": null,
-  "totalCommitsPushed": 0,
+  "lastRunDate": "2026-11-10",
+  "totalCommitsPushed": 4,
   "plan": [
     {
       "day": 1,
@@ -162,5 +162,12 @@
       "description": "Finalize CLI executable, comprehensive documentation, user manual, and publish official production v1.0.0 release."
     }
   ],
-  "history": []
+  "history": [
+    {
+      "day": 1,
+      "milestone": "Project Setup, Component Architecture & Candidate Profile Schemas",
+      "date": "2026-11-10",
+      "commitsCount": 4
+    }
+  ]
 }
