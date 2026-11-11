@@ -2,14 +2,14 @@
   "projectName": "AI Resume Optimization Agent",
   "repoName": "Ai-Resume-Customisation-for-jd",
   "repoOwner": "legion0069",
-  "currentDay": 2,
+  "currentDay": 3,
   "totalDays": 30,
   "commitsPerDay": 4,
   "cronTime": "10:30",
   "timezone": "Asia/Kolkata",
   "status": "active",
-  "lastRunDate": "2026-11-10",
-  "totalCommitsPushed": 4,
+  "lastRunDate": "2026-11-11",
+  "totalCommitsPushed": 8,
   "plan": [
     {
       "day": 1,
@@ -167,6 +167,12 @@
       "day": 1,
       "milestone": "Project Setup, Component Architecture & Candidate Profile Schemas",
       "date": "2026-11-10",
+      "commitsCount": 4
+    },
+    {
+      "day": 2,
+      "milestone": "Candidate Component Repository Engine & CRUD Store",
+      "date": "2026-11-11",
       "commitsCount": 4
     }
   ]
