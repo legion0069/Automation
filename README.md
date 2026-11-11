@@ -148,3 +148,5 @@ docker run -d -p 3000:3000 -v $(pwd)/data:/app/data --name gitstreak gitstreak-a
 - [x] **Day 1**: Project setup, directory scaffolding, and environment config
 
 - [x] **Day 2**: Data models, schema definitions, and validation helpers
+
+- [x] **Day 10**: Automated unit testing suite and edge-case validation
