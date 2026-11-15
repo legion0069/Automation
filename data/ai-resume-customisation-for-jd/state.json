@@ -2,14 +2,14 @@
   "projectName": "AI Resume Optimization Agent",
   "repoName": "Ai-Resume-Customisation-for-jd",
   "repoOwner": "legion0069",
-  "currentDay": 6,
+  "currentDay": 7,
   "totalDays": 30,
   "commitsPerDay": 4,
   "cronTime": "10:30",
   "timezone": "Asia/Kolkata",
   "status": "active",
-  "lastRunDate": "2026-11-14",
-  "totalCommitsPushed": 20,
+  "lastRunDate": "2026-11-15",
+  "totalCommitsPushed": 24,
   "plan": [
     {
       "day": 1,
@@ -191,6 +191,12 @@
       "day": 5,
       "milestone": "Candidate Profile Import/Export & Multi-Format Ingestion",
       "date": "2026-11-14",
+      "commitsCount": 4
+    },
+    {
+      "day": 6,
+      "milestone": "Job Description (JD) NLP Parser & Requirement Extractor",
+      "date": "2026-11-15",
       "commitsCount": 4
     }
   ]
