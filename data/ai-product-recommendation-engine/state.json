@@ -1,0 +1,166 @@
+{
+  "projectName": "AI Product Recommendation Engine",
+  "repoName": "AI-Product-Recommendation-Engine",
+  "repoOwner": "legion0069",
+  "currentDay": 1,
+  "totalDays": 30,
+  "commitsPerDay": 5,
+  "cronTime": "11:00",
+  "timezone": "Asia/Kolkata",
+  "status": "active",
+  "lastRunDate": null,
+  "totalCommitsPushed": 0,
+  "plan": [
+    {
+      "day": 1,
+      "title": "Project Setup, Architecture & Recommendation Domain Schemas",
+      "description": "Scaffold repository structure, core models for products, users, interactions, ratings, purchase transactions, and automated test framework."
+    },
+    {
+      "day": 2,
+      "title": "Product Catalog Repository & Multidimensional Tagging Store",
+      "description": "Implement in-memory and persistent product catalog with category taxonomy, brand metadata, pricing attributes, and keyword indexing."
+    },
+    {
+      "day": 3,
+      "title": "User Preference Profiler & Explicit Interest Matrix",
+      "description": "Build user interest profiler capturing explicit category preferences, brand affinities, price range filters, and preference decay factors."
+    },
+    {
+      "day": 4,
+      "title": "Purchase History Analyzer & Transaction Ledger Ingestion",
+      "description": "Ingest transaction logs, compute repeat purchase frequency, customer lifetime value (CLV), recency-frequency-monetary (RFM) segmentation, and basket history."
+    },
+    {
+      "day": 5,
+      "title": "Sparse Interaction Matrix Builder & Rating Normalizer",
+      "description": "Construct sparse User-Item interaction matrix, support implicit-to-explicit rating conversions, and implement mean-centering normalization."
+    },
+    {
+      "day": 6,
+      "title": "User-Based Collaborative Filtering (User-User Cosine & Pearson)",
+      "description": "Calculate pairwise user similarity using Cosine similarity and Pearson correlation, find top-k nearest neighbors, and predict missing product ratings."
+    },
+    {
+      "day": 7,
+      "title": "Item-Based Collaborative Filtering (Item-Item Adjusted Cosine)",
+      "description": "Compute item-to-item similarity matrix with adjusted cosine distance to recommend products similar to past purchases."
+    },
+    {
+      "day": 8,
+      "title": "Matrix Factorization & Latent Factor Decomposition (SVD / ALS)",
+      "description": "Implement matrix decomposition to discover latent user preferences and product features, minimizing prediction error with regularized learning."
+    },
+    {
+      "day": 9,
+      "title": "Content-Based Filtering & Product Feature Vector Extraction",
+      "description": "Generate product TF-IDF and categorical feature vectors, matching candidate products against a user's cumulative taste profile."
+    },
+    {
+      "day": 10,
+      "title": "Hybrid Recommendation Blending Engine (Weighted Multi-Model Ensemble)",
+      "description": "Merge collaborative filtering predictions with content-based scores via an adaptive weighted rank fusion algorithm."
+    },
+    {
+      "day": 11,
+      "title": "Cold-Start Onboarding Strategy & Popularity Fallback Engine",
+      "description": "Solve cold-start for new users and fresh products using onboarding preference questionnaires, category trending items, and Bayesian average popularity."
+    },
+    {
+      "day": 12,
+      "title": "Real-Time Session-Based Recommender & Short-Term Intent Tracker",
+      "description": "Track immediate in-session browsing signals, recency decay, and short-term intent to update recommendations in real-time."
+    },
+    {
+      "day": 13,
+      "title": "Implicit Feedback Processor (Clicks, Views, Cart Additions & Dwell Time)",
+      "description": "Translate behavioral micro-signals (views, scroll depth, cart adds, wishlists) into calibrated confidence-weighted interaction scores."
+    },
+    {
+      "day": 14,
+      "title": "Dynamic Re-Ranking, Novelty Boost & Filter-Bubble Mitigator",
+      "description": "Implement diversity-aware re-ranking (Maximal Marginal Relevance - MMR) to prevent recommendation echo chambers and promote novelty."
+    },
+    {
+      "day": 15,
+      "title": "Context-Aware Recommendations (Temporal, Seasonal & Device Context)",
+      "description": "Incorporate contextual dimensions such as time-of-day, day-of-week, holiday seasonality, and mobile vs. desktop purchasing habits."
+    },
+    {
+      "day": 16,
+      "title": "Market Basket Analysis & Frequently Bought Together (Apriori Engine)",
+      "description": "Mine association rules (Support, Confidence, Lift) across historical transactions to power cross-sell and 'Frequently Bought Together' bundles."
+    },
+    {
+      "day": 17,
+      "title": "Personalized Promotion Affinity & Price Sensitivity Matcher",
+      "description": "Estimate individual user price elasticity and match discounted or clearance items to price-sensitive shopper segments."
+    },
+    {
+      "day": 18,
+      "title": "Recommendation Evaluation Suite (Precision@K, Recall@K, MAP & NDCG)",
+      "description": "Implement offline evaluation metrics: Precision@K, Recall@K, Mean Average Precision (MAP), Normalized Discounted Cumulative Gain (NDCG), and RMSE."
+    },
+    {
+      "day": 19,
+      "title": "Explainable AI Recommendation Layer ('Why Recommended for You')",
+      "description": "Generate human-readable rationales explaining why items were suggested (e.g. 'Because you purchased Product X' or 'Top-rated in Category Y')."
+    },
+    {
+      "day": 20,
+      "title": "A/B Testing Framework & Multi-Armed Bandit Exploration Engine",
+      "description": "Deploy Epsilon-Greedy and Thompson Sampling bandit algorithms to balance exploitation of proven recommendations with exploration of new items."
+    },
+    {
+      "day": 21,
+      "title": "User Negative Signal & Dislike Feedback Loop Processor",
+      "description": "Process negative feedback (dismissed recommendations, product returns, 'don't show again') to suppress inappropriate suggestions."
+    },
+    {
+      "day": 22,
+      "title": "High-Speed Vector Similarity Search & Index Optimization",
+      "description": "Implement fast approximate nearest neighbor (ANN) search indices and candidate retrieval for sub-50ms recommendation generation."
+    },
+    {
+      "day": 23,
+      "title": "REST API Routing Layer (/recommendations/user, /similar, /preferences)",
+      "description": "Design modular Express/HTTP REST API endpoints serving personalized feeds, similar items, trending collections, and user preference updates."
+    },
+    {
+      "day": 24,
+      "title": "Interactive Web UI: Personalized Storefront & Dynamic Product Shelves",
+      "description": "Build responsive e-commerce web storefront featuring carousel shelves for 'Recommended for You', 'Trending Now', and 'Buy Again'."
+    },
+    {
+      "day": 25,
+      "title": "Interactive Web UI: User Preference Center & Purchase History Timeline",
+      "description": "Create user dashboard to view past orders, toggle explicit category/brand preferences, and manage personalized recommendation settings."
+    },
+    {
+      "day": 26,
+      "title": "Interactive Web UI: Collaborative Filtering Live Visualizer & Similarity Graph",
+      "description": "Interactive visualizer illustrating how user-user and item-item similarity clusters form and trigger personalized suggestions."
+    },
+    {
+      "day": 27,
+      "title": "Admin Analytics Dashboard: Click-Through Rates, Conversion Lift & Algorithm Benchmarks",
+      "description": "Executive metrics panel tracking recommendation click-through rates (CTR), conversion lift, algorithm performance, and revenue attribution."
+    },
+    {
+      "day": 28,
+      "title": "End-to-End Recommendation Pipeline Integration & Stress Testing",
+      "description": "Full end-to-end integration test suite simulating thousands of users, multi-category catalogs, concurrent recommendation queries, and stress tests."
+    },
+    {
+      "day": 29,
+      "title": "Data Privacy Compliance, Anonymization & High-Throughput Cache Layer",
+      "description": "Implement user data anonymization, GDPR right-to-be-forgotten deletion workflows, and high-performance in-memory caching."
+    },
+    {
+      "day": 30,
+      "title": "Production Packaging, Comprehensive User Guide & v1.0.0 Release",
+      "description": "Bundle production CLI executable, API documentation, end-user tutorials, benchmark reports, and official v1.0.0 release tag."
+    }
+  ],
+  "history": []
+}
